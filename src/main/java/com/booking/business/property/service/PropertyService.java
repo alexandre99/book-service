@@ -15,6 +15,4 @@ public interface PropertyService {
 
     Optional<PropertyView> findById(UUID id);
 
-    void disable(UUID id);
-
 }

@@ -1,18 +1,25 @@
 package com.booking.api.property.dto;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.LocalTime;
 import java.util.Set;
-import java.util.UUID;
 
 public record PropertyRequestDTO(
-        @NotNull
-        UUID ownerId,
         @NotBlank
         String name,
+        @NotBlank
+        String hostName,
         @NotEmpty
         @NotNull
-        Set<@NotBlank String> amenities) {
+        Set<@NotBlank String> amenities,
+        @NotNull
+        LocalTime checkInTime,
+        @NotNull
+        LocalTime checkOutTime,
+        @DecimalMin(value = "1.00")
+        Float dailyRate) {
 }

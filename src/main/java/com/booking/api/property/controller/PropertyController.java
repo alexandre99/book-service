@@ -27,9 +27,12 @@ public class PropertyController {
         final var savedPropertyId = this.service.save(
             new Property(
                 null,
-                propertyRequestDTO.ownerId(),
                 propertyRequestDTO.name(),
-                propertyRequestDTO.amenities()
+                propertyRequestDTO.hostName(),
+                propertyRequestDTO.amenities(),
+                propertyRequestDTO.checkInTime(),
+                propertyRequestDTO.checkOutTime(),
+                propertyRequestDTO.dailyRate()
             )
         );
 
@@ -50,9 +53,12 @@ public class PropertyController {
         this.service.save(
             new Property(
                 id,
-                propertyRequestDTO.ownerId(),
                 propertyRequestDTO.name(),
-                propertyRequestDTO.amenities()
+                propertyRequestDTO.hostName(),
+                propertyRequestDTO.amenities(),
+                propertyRequestDTO.checkInTime(),
+                propertyRequestDTO.checkOutTime(),
+                propertyRequestDTO.dailyRate()
             )
         );
         return ResponseEntity.noContent().build();
@@ -74,12 +80,5 @@ public class PropertyController {
         final var propertyView = this.service.findById(id);
         return propertyView.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<PropertyView> disable(@PathVariable("id")
-                                                 final UUID id) {
-        this.service.disable(id);
-        return ResponseEntity.noContent().build();
     }
 }

@@ -33,9 +33,4 @@ public class PropertyServiceImpl implements PropertyService {
     public Optional<PropertyView> findById(final UUID id) {
         return this.repository.findById(id);
     }
-
-    @Override
-    public void disable(final UUID id) {
-        this.repository.disable(id);
-    }
 }

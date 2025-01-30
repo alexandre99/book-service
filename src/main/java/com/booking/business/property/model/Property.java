@@ -1,12 +1,17 @@
+
 package com.booking.business.property.model;
 
+import java.time.LocalTime;
 import java.util.Set;
 import java.util.UUID;
 
 public record Property(
         UUID id,
-        UUID ownerId,
         String name,
-        Set<String> amenities
+        String hostName,
+        Set<String> amenities,
+        LocalTime checkInTime,
+        LocalTime checkOutTime,
+        Float dailyRate
 ) {
 }

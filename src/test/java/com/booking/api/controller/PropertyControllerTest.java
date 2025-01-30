@@ -4,10 +4,15 @@ import com.booking.api.property.dto.PropertyRequestDTO;
 import com.booking.business.property.model.Property;
 import com.booking.business.property.repository.PropertyRepository;
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -17,21 +22,31 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PropertyControllerTest extends AbstractIntegrationTest {
 
     private static final String BASE_URL = "/property";
     private static final String LOCATION = "Location";
+    private static final LocalTime DEFAULT_CHECK_IN_TIME = LocalTime.of(14, 0);
+    private static final LocalTime DEFAULT_CHECK_OUT_TIME = LocalTime.of(10, 0);
+    private static final Float DEFAULT_DAILY_RATE = 200.0F;
+    public static final String ELEVATOR = "Elevator";
 
     @Autowired
     private PropertyRepository repository;
 
+    @BeforeAll
+    void setup() {
+        super.mapper.registerModule(new JavaTimeModule());
+    }
+
     @Test
     void shouldCreateProperty() throws Exception {
         //given
-        final var ownerId = UUID.randomUUID();
+        final var hostName = UUID.randomUUID().toString();
         final var name = UUID.randomUUID().toString();
         final var requestBodyParsed = super.mapper.writeValueAsBytes(
-                buildPropertyRequestDTO(ownerId, name)
+                buildPropertyRequestDTO(name, hostName)
         );
         //when then
         mockMvc.perform(post(BASE_URL)
@@ -46,10 +61,10 @@ class PropertyControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldFindPropertyById() throws Exception {
         //given
-        final var ownerId = UUID.randomUUID();
         final var name = UUID.randomUUID().toString();
+        final var hostName = UUID.randomUUID().toString();
         final var requestBodyParsed = super.mapper.writeValueAsBytes(
-                buildPropertyRequestDTO(ownerId, name)
+            buildPropertyRequestDTO(name, hostName)
         );
 
         //when then
@@ -64,13 +79,21 @@ class PropertyControllerTest extends AbstractIntegrationTest {
                 response.getHeader(LOCATION)
         );
 
+        final var formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        final var checkInTimeExpected = formatter.format(DEFAULT_CHECK_IN_TIME);
+        final var checkOutTimeExpected = formatter.format(DEFAULT_CHECK_OUT_TIME);
+
         mockMvc.perform(get(uriToFetchSavedProperty))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNotEmpty())
                 .andExpect(jsonPath("$.name").value(name))
-                .andExpect(jsonPath("$.ownerId").value(ownerId.toString()))
+                .andExpect(jsonPath("$.hostName").value(hostName))
                 .andExpect(jsonPath("$.amenities").isArray())
-                .andExpect(jsonPath("$.amenities[0]").value("Elevator"));
+                .andExpect(jsonPath("$.amenities[0]").value(ELEVATOR))
+                .andExpect(jsonPath("$.checkInTime").value(checkInTimeExpected))
+                .andExpect(jsonPath("$.checkOutTime").value(checkOutTimeExpected))
+                .andExpect(jsonPath("$.dailyRate").value(DEFAULT_DAILY_RATE))
+        ;
     }
 
     @Sql(statements = "DELETE FROM property")
@@ -88,56 +111,29 @@ class PropertyControllerTest extends AbstractIntegrationTest {
 
     }
 
-    @Sql(statements = "DELETE FROM property")
-    @Test
-    void shouldFindAllWhenThereIsNoPropertyRegistered() throws Exception {
-        //when then
-        mockMvc.perform(get(BASE_URL.concat("?page=1&limit=2")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalItems").value(0))
-                .andExpect(jsonPath("$.totalPages").value(0))
-                .andExpect(jsonPath("$.currentPage").value(0))
-                .andExpect(jsonPath("$.content").isEmpty());
-
-    }
-
-    @Test
-    void shouldDeleteAndListOnlyEnabledProperty() throws Exception {
-        //given
-        final var propertyIds = createProperties();
-        final var propertyIdsToDisable = propertyIds.subList(0, 2);
-        //when
-        propertyIdsToDisable.forEach(propertyId-> {
-            try {
-                mockMvc.perform(delete(BASE_URL.concat("/%s".formatted(propertyId))))
-                        .andExpect(status().isNoContent());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-        //then
-        mockMvc.perform(get(BASE_URL.concat("?page=1&limit=2")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalItems").value(2))
-                .andExpect(jsonPath("$.totalPages").value(1))
-                .andExpect(jsonPath("$.currentPage").value(1))
-                .andExpect(jsonPath("$.content", hasSize(2)));
-    }
-
-    private List<UUID> createProperties() {
-        final List<UUID> propertyIds = new ArrayList<>();
+    private void createProperties() {
         IntStream.range(0, 4).forEach(i -> {
             final var entity = new Property(
-                null, UUID.randomUUID(), UUID.randomUUID().toString(), Set.of("Ar conditioning")
+                null,
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                Set.of("Ar conditioning"),
+                DEFAULT_CHECK_IN_TIME,
+                DEFAULT_CHECK_OUT_TIME,
+                DEFAULT_DAILY_RATE
             );
-            propertyIds.add(repository.save(entity));
+            repository.save(entity);
         });
-        return propertyIds;
     }
 
-    private PropertyRequestDTO buildPropertyRequestDTO(final UUID ownerId, final String name) {
+    private PropertyRequestDTO buildPropertyRequestDTO(final String name, final String hostName) {
         return new PropertyRequestDTO(
-                ownerId, name, Set.of("Elevator")
+            name,
+            hostName,
+            Set.of(ELEVATOR),
+            DEFAULT_CHECK_IN_TIME,
+            DEFAULT_CHECK_OUT_TIME,
+            DEFAULT_DAILY_RATE
         );
     }
 

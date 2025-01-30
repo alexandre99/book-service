@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.time.LocalTime;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -16,58 +17,79 @@ public class PropertyJpaEntity {
     @Id
     @GeneratedValue
     private UUID id;
-    @Column(name = "owner_id")
-    private UUID ownerId;
     private String name;
+    @JoinColumn(name = "host_name")
+    private String hostName;
     private Set<String> amenities;
+    private String address;
+    private LocalTime checkInTime;
+    private LocalTime checkOutTime;
+    @JoinColumn(name = "daily_rate")
+    private Float dailyRate;
     @Column(name = "created_at")
     @CreationTimestamp
     private Instant createdAt;
     @Column(name = "updated_at")
     @UpdateTimestamp
     private Instant updatedAt;
-    private boolean enable;
 
     public PropertyJpaEntity() {}
 
     public PropertyJpaEntity(
             final UUID id,
-            final UUID ownerId,
             final String name,
-            final Set<String> amenities) {
+            final String hostName,
+            final Set<String> amenities,
+            final LocalTime checkInTime,
+            final LocalTime checkOutTime,
+            final Float dailyRate) {
         this.id = id;
-        this.ownerId = ownerId;
         this.name = name;
+        this.hostName = hostName;
         this.amenities = amenities;
-        this.enable = true;
+        this.checkInTime = checkInTime;
+        this.checkOutTime = checkOutTime;
+        this.dailyRate = dailyRate;
     }
 
-    public boolean isEnable() {
-        return enable;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Set<String> getAmenities() {
-        return amenities;
+    public UUID getId() {
+        return id;
     }
 
     public String getName() {
         return name;
     }
 
-    public UUID getOwnerId() {
-        return ownerId;
+    public String getHostName() {
+        return hostName;
     }
 
-    public UUID getId() {
-        return id;
+    public Set<String> getAmenities() {
+        return amenities;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public LocalTime getCheckInTime() {
+        return checkInTime;
+    }
+
+    public LocalTime getCheckOutTime() {
+        return checkOutTime;
+    }
+
+    public Float getDailyRate() {
+        return dailyRate;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
     }
 
     @Override
@@ -83,10 +105,13 @@ public class PropertyJpaEntity {
 
     public static PropertyJpaEntity from(final Property property) {
         return new PropertyJpaEntity(
-                property.id(),
-                property.ownerId(),
-                property.name(),
-                property.amenities()
+            property.id(),
+            property.name(),
+            property.hostName(),
+            property.amenities(),
+            property.checkInTime(),
+            property.checkOutTime(),
+            property.dailyRate()
         );
     }
 }
