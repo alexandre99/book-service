@@ -3,7 +3,7 @@ package com.booking.api.property.controller;
 import com.booking.api.property.dto.PropertyRequestDTO;
 import com.booking.business.property.model.Property;
 import com.booking.business.property.model.PropertyPageableView;
-import com.booking.business.property.model.PropertyView;
+import com.booking.business.property.model.PropertyFullView;
 import com.booking.business.property.service.PropertyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +29,7 @@ public class PropertyController {
                 null,
                 propertyRequestDTO.name(),
                 propertyRequestDTO.hostName(),
+                propertyRequestDTO.address(),
                 propertyRequestDTO.amenities(),
                 propertyRequestDTO.checkInTime(),
                 propertyRequestDTO.checkOutTime(),
@@ -55,6 +56,7 @@ public class PropertyController {
                 id,
                 propertyRequestDTO.name(),
                 propertyRequestDTO.hostName(),
+                propertyRequestDTO.address(),
                 propertyRequestDTO.amenities(),
                 propertyRequestDTO.checkInTime(),
                 propertyRequestDTO.checkOutTime(),
@@ -75,7 +77,7 @@ public class PropertyController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PropertyView> findById(@PathVariable("id")
+    public ResponseEntity<PropertyFullView> findById(@PathVariable("id")
                                                  final UUID id) {
         final var propertyView = this.service.findById(id);
         return propertyView.map(ResponseEntity::ok)

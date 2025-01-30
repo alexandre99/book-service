@@ -9,6 +9,7 @@ public record Property(
         UUID id,
         String name,
         String hostName,
+        String address,
         Set<String> amenities,
         LocalTime checkInTime,
         LocalTime checkOutTime,

@@ -3,7 +3,7 @@ package com.booking.business.property.model;
 import java.util.Set;
 
 public record PropertyPageableView(
-        Set<PropertyView> content,
+        Set<PropertySampleView> content,
         long totalItems,
         int totalPages,
         int currentPage) {

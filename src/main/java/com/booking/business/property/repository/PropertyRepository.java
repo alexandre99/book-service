@@ -2,7 +2,7 @@ package com.booking.business.property.repository;
 
 import com.booking.business.property.model.PropertyPageableView;
 import com.booking.business.property.model.Property;
-import com.booking.business.property.model.PropertyView;
+import com.booking.business.property.model.PropertyFullView;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -13,6 +13,6 @@ public interface PropertyRepository {
 
     PropertyPageableView findAll(int page, int limit);
 
-    Optional<PropertyView> findById(UUID id);
+    Optional<PropertyFullView> findById(UUID id);
 
 }

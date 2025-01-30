@@ -17,19 +17,24 @@ public class PropertyJpaEntity {
     @Id
     @GeneratedValue
     private UUID id;
+    @Column(nullable = false)
     private String name;
-    @JoinColumn(name = "host_name")
+    @Column(nullable = false)
     private String hostName;
+    @Column(nullable = false)
     private Set<String> amenities;
+    @Column(nullable = false)
     private String address;
+    @Column(nullable = false)
     private LocalTime checkInTime;
+    @Column(nullable = false)
     private LocalTime checkOutTime;
-    @JoinColumn(name = "daily_rate")
+    @Column(nullable = false)
     private Float dailyRate;
-    @Column(name = "created_at")
+    @Column(nullable = false)
     @CreationTimestamp
     private Instant createdAt;
-    @Column(name = "updated_at")
+    @Column(nullable = false)
     @UpdateTimestamp
     private Instant updatedAt;
 
@@ -39,6 +44,7 @@ public class PropertyJpaEntity {
             final UUID id,
             final String name,
             final String hostName,
+            final String address,
             final Set<String> amenities,
             final LocalTime checkInTime,
             final LocalTime checkOutTime,
@@ -46,6 +52,7 @@ public class PropertyJpaEntity {
         this.id = id;
         this.name = name;
         this.hostName = hostName;
+        this.address = address;
         this.amenities = amenities;
         this.checkInTime = checkInTime;
         this.checkOutTime = checkOutTime;
@@ -108,6 +115,7 @@ public class PropertyJpaEntity {
             property.id(),
             property.name(),
             property.hostName(),
+            property.address(),
             property.amenities(),
             property.checkInTime(),
             property.checkOutTime(),

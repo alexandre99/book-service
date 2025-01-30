@@ -30,7 +30,8 @@ class PropertyControllerTest extends AbstractIntegrationTest {
     private static final LocalTime DEFAULT_CHECK_IN_TIME = LocalTime.of(14, 0);
     private static final LocalTime DEFAULT_CHECK_OUT_TIME = LocalTime.of(10, 0);
     private static final Float DEFAULT_DAILY_RATE = 200.0F;
-    public static final String ELEVATOR = "Elevator";
+    private static final String ELEVATOR = "Elevator";
+    private static final String DEFAULT_ADDRESS = "New York, EUA";
 
     @Autowired
     private PropertyRepository repository;
@@ -80,18 +81,19 @@ class PropertyControllerTest extends AbstractIntegrationTest {
         );
 
         final var formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-        final var checkInTimeExpected = formatter.format(DEFAULT_CHECK_IN_TIME);
-        final var checkOutTimeExpected = formatter.format(DEFAULT_CHECK_OUT_TIME);
+        final var expectedCheckInTime = formatter.format(DEFAULT_CHECK_IN_TIME);
+        final var expectedCheckOutTime = formatter.format(DEFAULT_CHECK_OUT_TIME);
 
         mockMvc.perform(get(uriToFetchSavedProperty))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNotEmpty())
                 .andExpect(jsonPath("$.name").value(name))
                 .andExpect(jsonPath("$.hostName").value(hostName))
+                .andExpect(jsonPath("$.address").value(DEFAULT_ADDRESS))
                 .andExpect(jsonPath("$.amenities").isArray())
                 .andExpect(jsonPath("$.amenities[0]").value(ELEVATOR))
-                .andExpect(jsonPath("$.checkInTime").value(checkInTimeExpected))
-                .andExpect(jsonPath("$.checkOutTime").value(checkOutTimeExpected))
+                .andExpect(jsonPath("$.checkInTime").value(expectedCheckInTime))
+                .andExpect(jsonPath("$.checkOutTime").value(expectedCheckOutTime))
                 .andExpect(jsonPath("$.dailyRate").value(DEFAULT_DAILY_RATE))
         ;
     }
@@ -107,7 +109,11 @@ class PropertyControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.totalItems").value(4))
                 .andExpect(jsonPath("$.totalPages").value(2))
                 .andExpect(jsonPath("$.currentPage").value(1))
-                .andExpect(jsonPath("$.content", hasSize(2)));
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].name").exists())
+                .andExpect(jsonPath("$.content[0].address").exists())
+                .andExpect(jsonPath("$.content[0].id").exists())
+                .andExpect(jsonPath("$.content[0].dailyRate").exists());
 
     }
 
@@ -117,6 +123,7 @@ class PropertyControllerTest extends AbstractIntegrationTest {
                 null,
                 UUID.randomUUID().toString(),
                 UUID.randomUUID().toString(),
+                DEFAULT_ADDRESS,
                 Set.of("Ar conditioning"),
                 DEFAULT_CHECK_IN_TIME,
                 DEFAULT_CHECK_OUT_TIME,
@@ -130,6 +137,7 @@ class PropertyControllerTest extends AbstractIntegrationTest {
         return new PropertyRequestDTO(
             name,
             hostName,
+            DEFAULT_ADDRESS,
             Set.of(ELEVATOR),
             DEFAULT_CHECK_IN_TIME,
             DEFAULT_CHECK_OUT_TIME,

@@ -2,7 +2,7 @@ package com.booking.business.property.service.impl;
 
 import com.booking.business.property.model.Property;
 import com.booking.business.property.model.PropertyPageableView;
-import com.booking.business.property.model.PropertyView;
+import com.booking.business.property.model.PropertyFullView;
 import com.booking.business.property.repository.PropertyRepository;
 import com.booking.business.property.service.PropertyService;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
-    public Optional<PropertyView> findById(final UUID id) {
+    public Optional<PropertyFullView> findById(final UUID id) {
         return this.repository.findById(id);
     }
 }

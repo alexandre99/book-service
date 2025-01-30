@@ -2,7 +2,8 @@ package com.booking.dataprovider.property.repository;
 
 import com.booking.business.property.model.Property;
 import com.booking.business.property.model.PropertyPageableView;
-import com.booking.business.property.model.PropertyView;
+import com.booking.business.property.model.PropertyFullView;
+import com.booking.business.property.model.PropertySampleView;
 import com.booking.business.property.repository.PropertyRepository;
 import com.booking.dataprovider.property.entity.PropertyJpaEntity;
 import org.springframework.data.domain.PageRequest;
@@ -34,14 +35,10 @@ public class PropertyRepositoryImpl implements PropertyRepository {
             return PropertyPageableView.empty();
         }
         final var content = results.stream().map(
-                entity -> new PropertyView(
+                entity -> new PropertySampleView(
                         entity.getId(),
                         entity.getName(),
-                        entity.getHostName(),
-                        entity.getAmenities(),
-                        entity.getCreatedAt(),
-                        entity.getCheckInTime(),
-                        entity.getCheckOutTime(),
+                        entity.getAddress(),
                         entity.getDailyRate()
                 )).collect(Collectors.toSet());
 
@@ -54,12 +51,13 @@ public class PropertyRepositoryImpl implements PropertyRepository {
     }
 
     @Override
-    public Optional<PropertyView> findById(final UUID id) {
+    public Optional<PropertyFullView> findById(final UUID id) {
         return delegate.findById(id)
-                .map(entity -> new PropertyView(
+                .map(entity -> new PropertyFullView(
                         entity.getId(),
                         entity.getName(),
                         entity.getHostName(),
+                        entity.getAddress(),
                         entity.getAmenities(),
                         entity.getCreatedAt(),
                         entity.getCheckInTime(),

@@ -13,6 +13,8 @@ public record PropertyRequestDTO(
         String name,
         @NotBlank
         String hostName,
+        @NotBlank
+        String address,
         @NotEmpty
         @NotNull
         Set<@NotBlank String> amenities,
