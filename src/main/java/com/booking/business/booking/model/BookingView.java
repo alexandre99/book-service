@@ -9,7 +9,7 @@ public record BookingView(
     UUID id,
     LocalDate startDate,
     LocalDate endDate,
-    boolean isCanceled,
+    State state,
     GuestDetails guestDetails,
     BookedPropertyDetailsView propertyDetails
 ) {

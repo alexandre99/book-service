@@ -59,4 +59,18 @@ public class BookingController {
         return bookingView.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+    @PatchMapping("/cancel/{id}")
+    public ResponseEntity<Void> cancelById(@PathVariable("id")
+                                           final UUID id) {
+        this.service.cancelById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/rebook/{id}")
+    public ResponseEntity<Void> rebookById(@PathVariable("id")
+                                           final UUID id) {
+        this.service.rebookById(id);
+        return ResponseEntity.noContent().build();
+    }
 }

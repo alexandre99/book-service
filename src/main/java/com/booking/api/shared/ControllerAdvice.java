@@ -2,8 +2,12 @@ package com.booking.api.shared;
 
 import com.booking.api.shared.dto.ErrorMessage;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class ControllerAdvice {
@@ -27,6 +31,18 @@ public class ControllerAdvice {
             final IllegalStateException ex
     ) {
         return ResponseEntity.badRequest().body(new ErrorMessage(ex.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<List<ErrorMessage>> handleValidationExceptions(
+        final MethodArgumentNotValidException ex
+    ) {
+        final var errors = ex.getBindingResult().getFieldErrors()
+                .stream()
+                .map(fieldError -> new ErrorMessage(fieldError.getDefaultMessage()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.badRequest().body(errors);
     }
 
 }

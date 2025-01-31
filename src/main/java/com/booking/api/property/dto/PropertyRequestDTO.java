@@ -9,19 +9,19 @@ import java.time.LocalTime;
 import java.util.Set;
 
 public record PropertyRequestDTO(
-        @NotBlank
+        @NotBlank(message = "name must no be empty or null")
         String name,
-        @NotBlank
+        @NotBlank(message = "hostName must no be empty or null")
         String hostName,
-        @NotBlank
+        @NotBlank(message = "address must no be empty or null")
         String address,
-        @NotEmpty
-        @NotNull
+        @NotEmpty(message = "amenities must no be empty")
+        @NotNull(message = "amenities must no be null")
         Set<@NotBlank String> amenities,
-        @NotNull
+        @NotNull(message = "checkInTime must not be null")
         LocalTime checkInTime,
-        @NotNull
+        @NotNull(message = "checkOutTime must not be null")
         LocalTime checkOutTime,
-        @DecimalMin(value = "1.00")
+        @DecimalMin(value = "1.00", message = "dailyRate must be equal to or greater than 1.00")
         Float dailyRate) {
 }

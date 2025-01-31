@@ -2,6 +2,7 @@ package com.booking.dataprovider.booking.entity;
 
 import com.booking.business.booking.model.Booking;
 import com.booking.dataprovider.booking.model.GuestDetails;
+import com.booking.business.booking.model.State;
 import com.booking.dataprovider.property.entity.PropertyJpaEntity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -34,7 +35,7 @@ public class BookingJpaEntity {
     private LocalDate startDate;
     @Column(nullable = false)
     private LocalDate endDate;
-    private boolean canceled;
+    private State state;
 
     public BookingJpaEntity() {}
 
@@ -43,13 +44,15 @@ public class BookingJpaEntity {
             final PropertyJpaEntity property,
             final GuestDetails guestDetails,
             final LocalDate startDate,
-            final LocalDate endDate
+            final LocalDate endDate,
+            final State state
     ) {
         this.id = id;
         this.property = property;
         this.guestDetails = guestDetails;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.state = state;
     }
 
     public UUID getId() {
@@ -80,8 +83,8 @@ public class BookingJpaEntity {
         return endDate;
     }
 
-    public boolean isCanceled() {
-        return canceled;
+    public State getState() {
+        return state;
     }
 
     @Override
@@ -95,13 +98,17 @@ public class BookingJpaEntity {
         return Objects.hashCode(id);
     }
 
-    public static BookingJpaEntity from(Booking booking, PropertyJpaEntity propertyEntity, GuestDetails guestDetails) {
+    public static BookingJpaEntity from(
+            final Booking booking,
+            final PropertyJpaEntity propertyEntity,
+            final GuestDetails guestDetails) {
         return new BookingJpaEntity(
             booking.id(),
             propertyEntity,
             guestDetails,
             booking.startDate(),
-            booking.endDate()
+            booking.endDate(),
+            State.ACTIVE
         );
     }
 }

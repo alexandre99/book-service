@@ -2,11 +2,14 @@ package com.booking.dataprovider.booking.repository;
 
 import com.booking.business.booking.model.Booking;
 import com.booking.business.booking.model.BookingView;
+import com.booking.business.booking.model.State;
+import com.booking.business.booking.projection.BookingWithPropertyAndDates;
 import com.booking.business.booking.repository.BookingRepository;
 import com.booking.business.property.model.BookedPropertyDetailsView;
 import com.booking.dataprovider.booking.entity.BookingJpaEntity;
 import com.booking.dataprovider.booking.model.GuestDetails;
 import com.booking.dataprovider.property.entity.PropertyJpaEntity;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -53,11 +56,28 @@ public class BookingRepositoryImpl implements BookingRepository {
                         entity.getId(),
                         entity.getStartDate(),
                         entity.getEndDate(),
-                        entity.isCanceled(),
+                        entity.getState(),
                         guestDetails,
                         propertyDetails
                     ));
                 });
+    }
+
+    @Transactional
+    @Override
+    public void cancelById(final UUID id) {
+        this.delegate.cancelById(id, State.CANCELED);
+    }
+
+    @Transactional
+    @Override
+    public void rebookById(final UUID id) {
+        this.delegate.rebookById(id, State.ACTIVE);
+    }
+
+    @Override
+    public Optional<BookingWithPropertyAndDates> findPropertyAndDatesByIdAndCancelState(final UUID id) {
+        return this.delegate.findPropertyAndDatesByIdAndCancelState(id, State.CANCELED);
     }
 
     @Override

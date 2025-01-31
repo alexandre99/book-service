@@ -12,4 +12,8 @@ public interface BookingService {
 
     Optional<BookingView> findById(UUID id);
 
+    void cancelById(UUID id);
+
+    void rebookById(UUID id);
+
 }
