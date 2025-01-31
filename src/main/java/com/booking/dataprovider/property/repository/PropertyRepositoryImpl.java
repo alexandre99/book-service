@@ -3,7 +3,7 @@ package com.booking.dataprovider.property.repository;
 import com.booking.business.property.model.Property;
 import com.booking.business.property.model.PropertyPageableView;
 import com.booking.business.property.model.PropertyFullView;
-import com.booking.business.property.model.PropertySampleView;
+import com.booking.business.property.model.PropertySummaryView;
 import com.booking.business.property.repository.PropertyRepository;
 import com.booking.dataprovider.property.entity.PropertyJpaEntity;
 import org.springframework.data.domain.PageRequest;
@@ -35,7 +35,7 @@ public class PropertyRepositoryImpl implements PropertyRepository {
             return PropertyPageableView.empty();
         }
         final var content = results.stream().map(
-                entity -> new PropertySampleView(
+                entity -> new PropertySummaryView(
                         entity.getId(),
                         entity.getName(),
                         entity.getAddress(),
@@ -65,5 +65,10 @@ public class PropertyRepositoryImpl implements PropertyRepository {
                         entity.getDailyRate()
                 ))
                 .or(Optional::empty);
+    }
+
+    @Override
+    public boolean isValidProperty(final UUID id) {
+        return this.delegate.existsById(id);
     }
 }

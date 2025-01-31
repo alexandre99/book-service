@@ -15,4 +15,6 @@ public interface PropertyService {
 
     Optional<PropertyFullView> findById(UUID id);
 
+    void validateProperty(UUID id);
+
 }

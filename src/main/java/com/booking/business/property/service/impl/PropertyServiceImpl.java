@@ -33,4 +33,22 @@ public class PropertyServiceImpl implements PropertyService {
     public Optional<PropertyFullView> findById(final UUID id) {
         return this.repository.findById(id);
     }
+
+    @Override
+    public void validateProperty(final UUID id) {
+        //validateBlockedProperty
+        validateExistenceProperty(id);
+    }
+
+    private void validateExistenceProperty(final UUID id) {
+        if (isValidProperty(id)) {
+            throw new IllegalArgumentException(
+                "Property %s id is not valid".formatted(id)
+            );
+        }
+    }
+
+    private boolean isValidProperty(final UUID id) {
+        return !this.repository.isValidProperty(id);
+    }
 }

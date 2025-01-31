@@ -1,5 +1,6 @@
 package com.booking.dataprovider.booking.entity;
 
+import com.booking.business.booking.model.Booking;
 import com.booking.dataprovider.booking.model.GuestDetails;
 import com.booking.dataprovider.property.entity.PropertyJpaEntity;
 import jakarta.persistence.*;
@@ -11,7 +12,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "Booking")
 @Table(name = "booking")
 public class BookingJpaEntity {
 
@@ -92,5 +93,15 @@ public class BookingJpaEntity {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    public static BookingJpaEntity from(Booking booking, PropertyJpaEntity propertyEntity, GuestDetails guestDetails) {
+        return new BookingJpaEntity(
+            booking.id(),
+            propertyEntity,
+            guestDetails,
+            booking.startDate(),
+            booking.endDate()
+        );
     }
 }

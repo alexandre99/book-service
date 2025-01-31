@@ -15,4 +15,5 @@ public interface PropertyRepository {
 
     Optional<PropertyFullView> findById(UUID id);
 
+    boolean isValidProperty(UUID id);
 }

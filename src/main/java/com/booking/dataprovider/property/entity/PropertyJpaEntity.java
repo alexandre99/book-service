@@ -59,6 +59,10 @@ public class PropertyJpaEntity {
         this.dailyRate = dailyRate;
     }
 
+    public PropertyJpaEntity(final UUID id) {
+        this.id = id;
+    }
+
     public UUID getId() {
         return id;
     }

@@ -17,4 +17,16 @@ public record GuestDetails(
     String specialRequests
 ) {
 
+    public static GuestDetails from(final com.booking.business.booking.model.GuestDetails guestDetails) {
+        return new GuestDetails(
+            guestDetails.fullName(),
+            guestDetails.email(),
+            guestDetails.phone(),
+            guestDetails.numberOfAdults(),
+            guestDetails.numberOfChildren(),
+            guestDetails.numberOfInfants(),
+            guestDetails.specialRequests()
+        );
+    }
+
 }

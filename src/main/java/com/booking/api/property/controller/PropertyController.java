@@ -5,6 +5,7 @@ import com.booking.business.property.model.Property;
 import com.booking.business.property.model.PropertyPageableView;
 import com.booking.business.property.model.PropertyFullView;
 import com.booking.business.property.service.PropertyService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -22,8 +23,8 @@ public class PropertyController {
     }
 
     @PostMapping
-    public ResponseEntity<Property> create(@RequestBody
-                                           final PropertyRequestDTO propertyRequestDTO) {
+    public ResponseEntity<Void> create(@RequestBody @Valid
+                                       final PropertyRequestDTO propertyRequestDTO) {
         final var savedPropertyId = this.service.save(
             new Property(
                 null,
@@ -49,7 +50,7 @@ public class PropertyController {
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable("id")
                                        final UUID id,
-                                       @RequestBody
+                                       @RequestBody @Valid
                                        final PropertyRequestDTO propertyRequestDTO) {
         this.service.save(
             new Property(
