@@ -1,4 +1,4 @@
-package com.booking.business.booking.projection;
+package com.booking.business.booking.model;
 
 import java.time.LocalDate;
 import java.util.UUID;

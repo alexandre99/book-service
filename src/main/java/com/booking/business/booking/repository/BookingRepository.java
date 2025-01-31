@@ -2,7 +2,7 @@ package com.booking.business.booking.repository;
 
 import com.booking.business.booking.model.Booking;
 import com.booking.business.booking.model.BookingView;
-import com.booking.business.booking.projection.BookingWithPropertyAndDates;
+import com.booking.business.booking.model.BookingWithPropertyAndDates;
 
 import java.time.LocalDate;
 import java.util.Optional;

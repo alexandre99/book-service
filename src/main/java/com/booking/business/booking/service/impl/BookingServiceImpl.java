@@ -2,7 +2,7 @@ package com.booking.business.booking.service.impl;
 
 import com.booking.business.booking.model.Booking;
 import com.booking.business.booking.model.BookingView;
-import com.booking.business.booking.projection.BookingWithPropertyAndDates;
+import com.booking.business.booking.model.BookingWithPropertyAndDates;
 import com.booking.business.booking.repository.BookingRepository;
 import com.booking.business.booking.service.BookingService;
 import com.booking.business.property.service.PropertyService;

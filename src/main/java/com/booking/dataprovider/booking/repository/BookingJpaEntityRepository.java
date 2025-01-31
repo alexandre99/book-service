@@ -1,8 +1,8 @@
 package com.booking.dataprovider.booking.repository;
 
 import com.booking.business.booking.model.State;
-import com.booking.business.booking.projection.BookingWithPropertyAndDates;
 import com.booking.dataprovider.booking.entity.BookingJpaEntity;
+import com.booking.dataprovider.booking.projection.BookingWithPropertyAndDatesProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -21,14 +21,16 @@ public interface BookingJpaEntityRepository extends JpaRepository<BookingJpaEnti
             WHERE b.property.id = :propertyId
             AND b.startDate < :endDate
             AND b.endDate > :startDate
-            AND state = 'ACTIVE'
+            AND state = :active
         """)
     boolean hasOverlap(@Param("propertyId")
                        UUID propertyId,
                        @Param("startDate")
                        LocalDate start,
                        @Param("endDate")
-                       LocalDate end);
+                       LocalDate end,
+                       @Param("active")
+                       State active);
 
     @Modifying
     @Query("""
@@ -48,13 +50,12 @@ public interface BookingJpaEntityRepository extends JpaRepository<BookingJpaEnti
                     @Param("active")
                     State active);
 
-    @Modifying
     @Query("""
-        SELECT b.property.id AS propertyId, b.startDate, b.endDate
+        SELECT b.property.id AS propertyId, b.startDate AS startDate, b.endDate as endDate
         FROM Booking b
         WHERE b.id = :id AND b.state = :canceled
     """)
-    Optional<BookingWithPropertyAndDates> findPropertyAndDatesByIdAndCancelState(
+    Optional<BookingWithPropertyAndDatesProjection> findPropertyAndDatesByIdAndCancelState(
             @Param("id")
             UUID id,
             @Param("canceled")

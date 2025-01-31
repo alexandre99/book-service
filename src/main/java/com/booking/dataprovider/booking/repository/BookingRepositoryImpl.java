@@ -3,7 +3,7 @@ package com.booking.dataprovider.booking.repository;
 import com.booking.business.booking.model.Booking;
 import com.booking.business.booking.model.BookingView;
 import com.booking.business.booking.model.State;
-import com.booking.business.booking.projection.BookingWithPropertyAndDates;
+import com.booking.business.booking.model.BookingWithPropertyAndDates;
 import com.booking.business.booking.repository.BookingRepository;
 import com.booking.business.property.model.BookedPropertyDetailsView;
 import com.booking.dataprovider.booking.entity.BookingJpaEntity;
@@ -77,7 +77,11 @@ public class BookingRepositoryImpl implements BookingRepository {
 
     @Override
     public Optional<BookingWithPropertyAndDates> findPropertyAndDatesByIdAndCancelState(final UUID id) {
-        return this.delegate.findPropertyAndDatesByIdAndCancelState(id, State.CANCELED);
+        return this.delegate.findPropertyAndDatesByIdAndCancelState(id, State.CANCELED)
+                .map(p -> new BookingWithPropertyAndDates(
+                        p.getPropertyId(), p.getStartDate(), p.getEndDate()
+                    )
+                );
     }
 
     @Override
@@ -85,7 +89,7 @@ public class BookingRepositoryImpl implements BookingRepository {
                               final LocalDate startDate,
                               final LocalDate endDate) {
         return this.delegate.hasOverlap(
-            propertyId, startDate, endDate
+            propertyId, startDate, endDate, State.ACTIVE
         );
     }
 }

@@ -35,6 +35,7 @@ public class BookingJpaEntity {
     private LocalDate startDate;
     @Column(nullable = false)
     private LocalDate endDate;
+    @Enumerated(EnumType.STRING)
     private State state;
 
     public BookingJpaEntity() {}
