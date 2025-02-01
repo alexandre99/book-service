@@ -6,6 +6,7 @@ import com.booking.business.booking.model.BookingWithPropertyAndDates;
 import com.booking.business.booking.model.State;
 import com.booking.business.booking.repository.BookingRepository;
 import com.booking.business.booking.service.impl.BookingServiceImpl;
+import com.booking.business.property.service.BlockPropertyService;
 import com.booking.business.property.service.PropertyService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +24,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class BookingServiceTest {
+class BookingServiceTest {
+
+    @Mock
+    private BlockPropertyService blockPropertyService;
 
     @Mock
     private PropertyService propertyService;
@@ -44,17 +48,17 @@ public class BookingServiceTest {
         this.bookingService.save(booking);
         //then
         verify(this.propertyService).validateProperty(booking.propertyId());
-        verify(this.propertyService).validateProperty(any(UUID.class));
+        verify(this.propertyService).validateProperty(any());
 
         verify(this.bookingRepository).hasOverLap(
             booking.propertyId(), booking.startDate(), booking.endDate()
         );
         verify(this.bookingRepository).hasOverLap(
-            any(UUID.class), any(LocalDate.class), any(LocalDate.class)
+            any(), any(), any()
         );
 
         verify(this.bookingRepository).save(booking);
-        verify(this.bookingRepository).save(any(Booking.class));
+        verify(this.bookingRepository).save(any());
     }
 
     @Test
@@ -97,10 +101,10 @@ public class BookingServiceTest {
             booking.propertyId(), booking.startDate(), booking.endDate()
         );
         verify(this.bookingRepository).hasOverLap(
-            any(UUID.class), any(LocalDate.class), any(LocalDate.class)
+            any(), any(), any()
         );
 
-        verify(this.bookingRepository, never()).save(any(Booking.class));
+        verify(this.bookingRepository, never()).save(any());
     }
 
     @Test
@@ -117,10 +121,10 @@ public class BookingServiceTest {
                 () -> this.bookingService.save(booking));
 
         verify(this.bookingRepository, never()).hasOverLap(
-                any(UUID.class), any(LocalDate.class), any(LocalDate.class)
+            any(), any(), any()
         );
 
-        verify(this.bookingRepository, never()).save(any(Booking.class));
+        verify(this.bookingRepository, never()).save(any());
     }
 
     @Test
@@ -145,7 +149,7 @@ public class BookingServiceTest {
         this.bookingService.cancelById(bookingId);
         //
         verify(this.bookingRepository).cancelById(bookingId);
-        verify(this.bookingRepository).cancelById(any(UUID.class));
+        verify(this.bookingRepository).cancelById(any());
     }
 
     @Test
@@ -158,7 +162,7 @@ public class BookingServiceTest {
         assertThrows(IllegalArgumentException.class,
                 () -> this.bookingService.rebookById(bookingId));
         //then
-        verify(this.bookingRepository, never()).rebookById(any(UUID.class));
+        verify(this.bookingRepository, never()).rebookById(any());
     }
 
     @Test
@@ -175,7 +179,7 @@ public class BookingServiceTest {
 
         //then
         verify(this.bookingRepository).rebookById(bookingId);
-        verify(this.bookingRepository).rebookById(any(UUID.class));
+        verify(this.bookingRepository).rebookById(any());
     }
 
     @Test
@@ -200,7 +204,7 @@ public class BookingServiceTest {
         this.bookingService.deleteById(bookingId);
         //
         verify(this.bookingRepository).deleteById(bookingId);
-        verify(this.bookingRepository).deleteById(any(UUID.class));
+        verify(this.bookingRepository).deleteById(any());
     }
 
     @Test
@@ -216,7 +220,7 @@ public class BookingServiceTest {
                 ));
 
         verify(this.bookingRepository, never()).updateBookingDates(
-            any(UUID.class), any(LocalDate.class), any(LocalDate.class)
+            any(), any(), any()
         );
     }
 
@@ -232,7 +236,7 @@ public class BookingServiceTest {
             () -> this.bookingService.updateBookingDates(bookingId, LocalDate.now(), LocalDate.now()));
 
         verify(this.bookingRepository, never()).updateBookingDates(
-            any(UUID.class), any(LocalDate.class), any(LocalDate.class)
+            any(), any(), any()
         );
     }
 
@@ -250,7 +254,7 @@ public class BookingServiceTest {
         );
 
         verify(this.bookingRepository, never()).updateBookingDates(
-            any(UUID.class), any(LocalDate.class), any(LocalDate.class)
+            any(), any(), any()
         );
     }
 
@@ -273,7 +277,7 @@ public class BookingServiceTest {
             ));
 
         verify(this.bookingRepository, never()).updateBookingDates(
-            any(UUID.class), any(LocalDate.class), any(LocalDate.class)
+            any(), any(), any()
         );
     }
 
@@ -299,7 +303,7 @@ public class BookingServiceTest {
                 ));
 
         verify(this.bookingRepository, never()).updateGuestDetails(
-                any(UUID.class), any(GuestDetails.class)
+            any(), any()
         );
     }
 
@@ -326,18 +330,22 @@ public class BookingServiceTest {
         verify(this.bookingRepository).updateGuestDetails(bookingId, guestDetails);
     }
 
+    @Test
+    void shouldNotSaveBookingWhenThereIsAnOverlapWithBlockProperty() {
+
+    }
+
     private void verifyWhenStartDateIsInvalid(Booking booking) {
         assertThrows(IllegalArgumentException.class,
                 () -> this.bookingService.save(booking));
 
-        verify(this.propertyService).validateProperty(booking.propertyId());
-        verify(this.propertyService).validateProperty(any(UUID.class));
+        verify(this.propertyService, never()).validateProperty(any());
 
         verify(this.bookingRepository, never()).hasOverLap(
-                any(UUID.class), any(LocalDate.class), any(LocalDate.class)
+            any(), any(), any()
         );
 
-        verify(this.bookingRepository, never()).save(any(Booking.class));
+        verify(this.bookingRepository, never()).save(any());
     }
 
     private static Booking getBooking(final LocalDate startDate,

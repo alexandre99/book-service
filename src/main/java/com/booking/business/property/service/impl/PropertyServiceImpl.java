@@ -36,7 +36,6 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     public void validateProperty(final UUID id) {
-        //validateBlockedProperty
         validateExistenceProperty(id);
     }
 

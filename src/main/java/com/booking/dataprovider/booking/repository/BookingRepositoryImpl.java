@@ -8,7 +8,6 @@ import com.booking.business.booking.repository.BookingRepository;
 import com.booking.business.property.model.BookedPropertyDetailsView;
 import com.booking.dataprovider.booking.entity.BookingJpaEntity;
 import com.booking.dataprovider.booking.model.GuestDetails;
-import com.booking.dataprovider.property.entity.PropertyJpaEntity;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
@@ -28,11 +27,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 
     @Override
     public UUID save(final Booking booking) {
-        final var propertyEntity = new PropertyJpaEntity(
-            booking.propertyId()
-        );
-        final var guestDetails = GuestDetails.from(booking.guestDetails());
-        final var entity = BookingJpaEntity.from(booking, propertyEntity, guestDetails);
+        final var entity = BookingJpaEntity.from(booking);
         return this.delegate.save(entity).getId();
     }
 

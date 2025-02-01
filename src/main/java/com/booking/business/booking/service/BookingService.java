@@ -24,4 +24,9 @@ public interface BookingService {
 
     void updateGuestDetails(UUID id, GuestDetails guestDetails);
 
+    void validateOverLap(final UUID propertyId,
+                             final LocalDate startDate,
+                             final LocalDate endDate,
+                            final String validationMessage);
+
 }

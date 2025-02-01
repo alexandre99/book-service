@@ -1,6 +1,6 @@
 package com.booking.api.controller;
 
-import com.booking.PropertyMother;
+import com.booking.shared.PropertyMother;
 import com.booking.api.booking.dto.BookingRequestDTO;
 import com.booking.api.booking.dto.GuestDetailsDTO;
 import com.booking.api.booking.dto.UpdateBookingDatesRequest;

@@ -20,21 +20,28 @@ public class BookingJpaEntity {
     @Id
     @GeneratedValue
     private UUID id;
+
     @ManyToOne
     @JoinColumn(name = "property_id", nullable = false)
     private PropertyJpaEntity property;
+
     @Embedded
     private GuestDetails guestDetails;
+
     @Column(nullable = false)
     @CreationTimestamp
     private Instant createdAt;
+
     @Column(nullable = false)
     @UpdateTimestamp
     private Instant updatedAt;
+
     @Column(nullable = false)
     private LocalDate startDate;
+
     @Column(nullable = false)
     private LocalDate endDate;
+
     @Enumerated(EnumType.STRING)
     private State state;
 
@@ -100,9 +107,11 @@ public class BookingJpaEntity {
     }
 
     public static BookingJpaEntity from(
-            final Booking booking,
-            final PropertyJpaEntity propertyEntity,
-            final GuestDetails guestDetails) {
+            final Booking booking) {
+        final var propertyEntity = new PropertyJpaEntity(
+            booking.propertyId()
+        );
+        final var guestDetails = GuestDetails.from(booking.guestDetails());
         return new BookingJpaEntity(
             booking.id(),
             propertyEntity,

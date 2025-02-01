@@ -1,6 +1,7 @@
 package com.booking.business.booking.repository;
 
 import com.booking.business.booking.model.*;
+import com.booking.business.booking.model.State;
 
 import java.time.LocalDate;
 import java.util.List;

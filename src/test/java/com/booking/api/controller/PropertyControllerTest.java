@@ -1,6 +1,6 @@
 package com.booking.api.controller;
 
-import com.booking.PropertyMother;
+import com.booking.shared.PropertyMother;
 import com.booking.api.property.dto.PropertyRequestDTO;
 
 import org.junit.jupiter.api.Test;
@@ -10,7 +10,7 @@ import org.springframework.test.context.jdbc.Sql;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.booking.PropertyMother.*;
+import static com.booking.shared.PropertyMother.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.springframework.http.HttpHeaders.LOCATION;

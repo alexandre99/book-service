@@ -1,4 +1,4 @@
-package com.booking;
+package com.booking.shared;
 
 import com.booking.business.property.model.Property;
 import com.booking.business.property.repository.PropertyRepository;

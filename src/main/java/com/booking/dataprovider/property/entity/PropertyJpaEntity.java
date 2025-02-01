@@ -17,23 +17,32 @@ public class PropertyJpaEntity {
     @Id
     @GeneratedValue
     private UUID id;
+
     @Column(nullable = false)
     private String name;
+
     @Column(nullable = false)
     private String hostName;
+
     @Column(nullable = false)
     private Set<String> amenities;
+
     @Column(nullable = false)
     private String address;
+
     @Column(nullable = false)
     private LocalTime checkInTime;
+
     @Column(nullable = false)
     private LocalTime checkOutTime;
+
     @Column(nullable = false)
     private Float dailyRate;
+
     @Column(nullable = false)
     @CreationTimestamp
     private Instant createdAt;
+
     @Column(nullable = false)
     @UpdateTimestamp
     private Instant updatedAt;

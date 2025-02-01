@@ -3,7 +3,9 @@ package com.booking.business.booking.service.impl;
 import com.booking.business.booking.model.*;
 import com.booking.business.booking.repository.BookingRepository;
 import com.booking.business.booking.service.BookingService;
+import com.booking.business.property.service.BlockPropertyService;
 import com.booking.business.property.service.PropertyService;
+import com.booking.business.booking.model.State;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -14,19 +16,24 @@ import java.util.UUID;
 @Service
 public class BookingServiceImpl implements BookingService {
 
+    public static final String BOOKING_DATES_OVERLAP_MESSAGE = "Booking dates is not available for reservation";
     private final BookingRepository repository;
     private final PropertyService propertyService;
+    private final BlockPropertyService blockPropertyService;
 
     public BookingServiceImpl(final BookingRepository repository,
-                              final PropertyService propertyService) {
+                              final PropertyService propertyService,
+                              final BlockPropertyService blockPropertyService) {
         this.repository = repository;
         this.propertyService = propertyService;
+        this.blockPropertyService = blockPropertyService;
     }
 
     @Override
     public UUID save(final Booking booking) {
+        validateStartDateEqualsOrAfterEndDate(booking);
         this.propertyService.validateProperty(booking.propertyId());
-        validateDates(booking);
+        validateOverLaps(booking);
         return this.repository.save(booking);
     }
 
@@ -44,11 +51,14 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public void rebookById(final UUID id) {
-        final var bookingWithPropertyAndDates = this.repository.findPropertyAndDatesByIdAndCancelState(id)
+        final var booking = this.repository.findPropertyAndDatesByIdAndCancelState(id)
                 .orElseThrow(() -> new IllegalArgumentException(
                     "Rebooking failed: The provided ID %s is invalid.".formatted(id)
                 ));
-        this.processRebooking(id, bookingWithPropertyAndDates);
+        validateOverLap(
+            booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
+        );
+        this.repository.rebookById(id);
     }
 
     @Override
@@ -64,7 +74,9 @@ public class BookingServiceImpl implements BookingService {
                                    final LocalDate endDate) {
         final var propertyId = this.repository.findPropertyByIdAndBookingActive(id);
         validateAction(propertyId.isEmpty(), "Updating booking dates", id);
-        validateDates(new Booking(id, propertyId.get(), startDate, endDate, null));
+        final var booking = new Booking(id, propertyId.get(), startDate, endDate, null);
+        validateStartDateEqualsOrAfterEndDate(booking);
+        validateOverLaps(booking);
         this.repository.updateBookingDates(id, startDate, endDate);
     }
 
@@ -73,6 +85,17 @@ public class BookingServiceImpl implements BookingService {
         final var isValidToUpdate = this.repository.existsByIdAndStates(id, List.of(State.ACTIVE));
         validateAction(!isValidToUpdate, "Updating guest details", id);
         this.repository.updateGuestDetails(id, guestDetails);
+    }
+
+    @Override
+    public void validateOverLap(final UUID propertyId,
+                                 final LocalDate startDate,
+                                 final LocalDate endDate,
+                                 final String validationMessage) {
+        final var hasOverLap = this.repository.hasOverLap(propertyId, startDate, endDate);
+        if (hasOverLap) {
+            throw new IllegalStateException(validationMessage);
+        }
     }
 
     private void validateAction(final boolean isInvalidToApplyAction,
@@ -85,29 +108,19 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private void processRebooking(final UUID bookingId, final BookingWithPropertyAndDates booking) {
-        validateOverLap(booking.propertyId(), booking.startDate(), booking.endDate());
-        this.repository.rebookById(bookingId);
-    }
-
-    private void validateDates(final Booking booking) {
-        validateStartDateEqualsOrAfterEndDate(booking);
-        validateOverLap(booking.propertyId(), booking.startDate(), booking.endDate());
-    }
-
-    private void validateOverLap(final UUID propertyId,
-                                 final LocalDate startDate,
-                                 final LocalDate endDate) {
-        final var hasOverLap = this.repository.hasOverLap(propertyId, startDate, endDate);
-        if (hasOverLap) {
-            throw new IllegalStateException("Booking dates is not available for reservation");
-        }
-    }
-
     private void validateStartDateEqualsOrAfterEndDate(final Booking booking) {
         if (booking.isStartDateEqualsOrAfterEndDate()) {
             throw new IllegalArgumentException("Booking start date must be before end date.");
         }
+    }
+
+    private void validateOverLaps(final Booking booking) {
+        validateOverLap(
+            booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
+        );
+        this.blockPropertyService.validateOverLap(
+            booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
+        );
     }
 
 }
