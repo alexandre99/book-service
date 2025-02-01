@@ -303,6 +303,29 @@ public class BookingServiceTest {
         );
     }
 
+    @Test
+    void shouldUpdateGuestDetails() {
+        //given
+        final var bookingId = UUID.randomUUID();
+        final var guestDetails = new GuestDetails(
+                "fullName",
+                "email",
+                "phone",
+                1,
+                0,
+                0,
+                "specialRequests"
+        );
+        when(this.bookingRepository.existsByIdAndStates(bookingId, List.of(State.ACTIVE)))
+                .thenReturn(true);
+        //when
+        this.bookingService.updateGuestDetails(
+            bookingId, guestDetails
+        );
+        //then
+        verify(this.bookingRepository).updateGuestDetails(bookingId, guestDetails);
+    }
+
     private void verifyWhenStartDateIsInvalid(Booking booking) {
         assertThrows(IllegalArgumentException.class,
                 () -> this.bookingService.save(booking));

@@ -1,45 +1,29 @@
 package com.booking.api.controller;
 
+import com.booking.PropertyMother;
 import com.booking.api.property.dto.PropertyRequestDTO;
-import com.booking.business.property.model.Property;
-import com.booking.business.property.repository.PropertyRepository;
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.IntStream;
 
+import static com.booking.PropertyMother.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PropertyControllerTest extends AbstractIntegrationTest {
 
     private static final String BASE_URL = "/property";
-    private static final String LOCATION = "Location";
-    private static final LocalTime DEFAULT_CHECK_IN_TIME = LocalTime.of(14, 0);
-    private static final LocalTime DEFAULT_CHECK_OUT_TIME = LocalTime.of(10, 0);
-    private static final Float DEFAULT_DAILY_RATE = 200.0F;
-    private static final String ELEVATOR = "Elevator";
-    private static final String DEFAULT_ADDRESS = "New York, EUA";
 
     @Autowired
-    private PropertyRepository repository;
-
-    @BeforeAll
-    void setup() {
-        super.mapper.registerModule(new JavaTimeModule());
-    }
+    private PropertyMother propertyMother;
 
     @Test
     void shouldCreateProperty() throws Exception {
@@ -102,7 +86,7 @@ class PropertyControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldFindAll() throws Exception {
         //given
-        createProperties();
+        propertyMother.createProperties(4);
         //when then
         mockMvc.perform(get(BASE_URL.concat("?page=1&limit=2")))
                 .andExpect(status().isOk())
@@ -115,22 +99,6 @@ class PropertyControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.content[0].id").exists())
                 .andExpect(jsonPath("$.content[0].dailyRate").exists());
 
-    }
-
-    private void createProperties() {
-        IntStream.range(0, 4).forEach(i -> {
-            final var entity = new Property(
-                null,
-                UUID.randomUUID().toString(),
-                UUID.randomUUID().toString(),
-                DEFAULT_ADDRESS,
-                Set.of("Ar conditioning"),
-                DEFAULT_CHECK_IN_TIME,
-                DEFAULT_CHECK_OUT_TIME,
-                DEFAULT_DAILY_RATE
-            );
-            repository.save(entity);
-        });
     }
 
     private PropertyRequestDTO buildPropertyRequestDTO(final String name, final String hostName) {
