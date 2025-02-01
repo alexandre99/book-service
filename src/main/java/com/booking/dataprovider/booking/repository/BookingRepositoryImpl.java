@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -100,8 +101,9 @@ public class BookingRepositoryImpl implements BookingRepository {
     }
 
     @Override
-    public boolean existsById(final UUID id) {
-        return this.delegate.existsByIdAndStateNot(id, State.DELETED);
+    public boolean existsByIdAndStates(final UUID id,
+                                       final List<State> states) {
+        return this.delegate.existsByIdAndStateIn(id, states);
     }
 
     @Override
@@ -115,5 +117,13 @@ public class BookingRepositoryImpl implements BookingRepository {
                                        final LocalDate startDate,
                                        final LocalDate endDate) {
         this.delegate.updateReservationDates(id, startDate, endDate);
+    }
+
+    @Override
+    public void updateGuestDetails(final UUID id,
+                                   final com.booking.business.booking.model.GuestDetails guestDetails) {
+        final var entity = this.delegate.findById(id).orElseThrow();
+        entity.changeGuestDetails(GuestDetails.from(guestDetails));
+        this.delegate.save(entity);
     }
 }

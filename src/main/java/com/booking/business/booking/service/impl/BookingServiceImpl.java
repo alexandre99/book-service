@@ -1,15 +1,13 @@
 package com.booking.business.booking.service.impl;
 
-import com.booking.business.booking.model.Booking;
-import com.booking.business.booking.model.BookingView;
-import com.booking.business.booking.model.BookingWithPropertyAndDates;
+import com.booking.business.booking.model.*;
 import com.booking.business.booking.repository.BookingRepository;
 import com.booking.business.booking.service.BookingService;
 import com.booking.business.property.service.PropertyService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,7 +37,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public void cancelById(final UUID id) {
-        final var isValid = this.repository.existsById(id);
+        final var isValid = this.repository.existsByIdAndStates(id, List.of(State.ACTIVE));
         validateAction(!isValid, "Cancellation", id);
         this.repository.cancelById(id);
     }
@@ -55,7 +53,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public void deleteById(final UUID id) {
-        final var isValid = this.repository.existsById(id);
+        final var isValid = this.repository.existsByIdAndStates(id, List.of(State.ACTIVE, State.CANCELED));
         validateAction(!isValid, "Deletion", id);
         this.repository.deleteById(id);
     }
@@ -68,6 +66,13 @@ public class BookingServiceImpl implements BookingService {
         validateAction(propertyId.isEmpty(), "Updating date", id);
         validateDates(new Booking(id, propertyId.get(), startDate, endDate, null));
         this.repository.updateReservationDates(id, startDate, endDate);
+    }
+
+    @Override
+    public void updateGuestDetails(final UUID id, final GuestDetails guestDetails) {
+        final var isValidToUpdate = this.repository.existsByIdAndStates(id, List.of(State.ACTIVE));
+        validateAction(!isValidToUpdate, "Updating guest details", id);
+        this.repository.updateGuestDetails(id, guestDetails);
     }
 
     private void validateAction(final boolean isInvalidToApplyAction,

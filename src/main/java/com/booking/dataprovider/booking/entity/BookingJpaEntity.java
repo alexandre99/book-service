@@ -112,4 +112,8 @@ public class BookingJpaEntity {
             State.ACTIVE
         );
     }
+
+    public void changeGuestDetails(final GuestDetails guestDetails) {
+        this.guestDetails = guestDetails;
+    }
 }

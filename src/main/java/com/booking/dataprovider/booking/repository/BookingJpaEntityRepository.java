@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -72,7 +73,7 @@ public interface BookingJpaEntityRepository extends JpaRepository<BookingJpaEnti
 
     Optional<BookingJpaEntity> findByIdAndStateNot(UUID id, State state);
 
-    boolean existsByIdAndStateNot(UUID id, State state);
+    boolean existsByIdAndStateIn(UUID id, List<State> state);
 
     @Query("""
             SELECT b.property.id FROM Booking b

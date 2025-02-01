@@ -1,12 +1,12 @@
 package com.booking.business.booking.repository;
 
-import com.booking.business.booking.model.Booking;
-import com.booking.business.booking.model.BookingView;
-import com.booking.business.booking.model.BookingWithPropertyAndDates;
+import com.booking.business.booking.model.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 
 public interface BookingRepository {
 
@@ -24,9 +24,11 @@ public interface BookingRepository {
 
     boolean hasOverLap(UUID propertyId, LocalDate startDate, LocalDate endDate);
 
-    boolean existsById(UUID id);
+    boolean existsByIdAndStates(UUID id, List<State> states);
 
     Optional<UUID> findPropertyByIdAndBookingActive(UUID id);
 
     void updateReservationDates(UUID id, LocalDate startDate, LocalDate endDate);
+
+    void updateGuestDetails(UUID id, GuestDetails guestDetails);
 }

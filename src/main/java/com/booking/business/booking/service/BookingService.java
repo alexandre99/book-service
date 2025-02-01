@@ -2,6 +2,7 @@ package com.booking.business.booking.service;
 
 import com.booking.business.booking.model.Booking;
 import com.booking.business.booking.model.BookingView;
+import com.booking.business.booking.model.GuestDetails;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -20,5 +21,7 @@ public interface BookingService {
     void deleteById(UUID id);
 
     void updateReservationDates(UUID id, LocalDate startDate, LocalDate endDate);
+
+    void updateGuestDetails(UUID id, GuestDetails guestDetails);
 
 }

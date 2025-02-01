@@ -2,6 +2,7 @@ package com.booking.api.booking.controller;
 
 import com.booking.api.booking.dto.BookingRequestDTO;
 import com.booking.api.booking.dto.BookingUpdateReservationDatesRequest;
+import com.booking.api.booking.dto.GuestDetailsDTO;
 import com.booking.business.booking.model.Booking;
 import com.booking.business.booking.model.BookingView;
 import com.booking.business.booking.model.GuestDetails;
@@ -83,13 +84,32 @@ public class BookingController {
     }
 
     @PatchMapping("/{id}/update-reservation-dates")
-    public ResponseEntity<Void> rebookById(@PathVariable("id")
-                                           final UUID id,
-                                           @RequestBody
-                                           final BookingUpdateReservationDatesRequest bookingUpdateReservationDatesRequest) {
+    public ResponseEntity<Void> updateReservationDates(
+            @PathVariable("id")
+            final UUID id,
+            @RequestBody
+            final BookingUpdateReservationDatesRequest bookingUpdateReservationDatesRequest) {
         this.service.updateReservationDates(
             id, bookingUpdateReservationDatesRequest.startDate(), bookingUpdateReservationDatesRequest.endDate()
         );
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/update-guest-details")
+    public ResponseEntity<Void> updateGuestDetails(@PathVariable("id")
+                                                   final UUID id,
+                                                   @RequestBody
+                                                   final GuestDetailsDTO guestDetailsDTO) {
+        final var guestDetails = new GuestDetails(
+            guestDetailsDTO.fullName(),
+            guestDetailsDTO.email(),
+            guestDetailsDTO.phone(),
+            guestDetailsDTO.numberOfAdults(),
+            guestDetailsDTO.numberOfChildren(),
+            guestDetailsDTO.numberOfInfants(),
+            guestDetailsDTO.specialRequests()
+        );
+        this.service.updateGuestDetails(id, guestDetails);
         return ResponseEntity.noContent().build();
     }
 

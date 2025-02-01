@@ -3,6 +3,7 @@ package com.booking.business;
 import com.booking.business.booking.model.Booking;
 import com.booking.business.booking.model.GuestDetails;
 import com.booking.business.booking.model.BookingWithPropertyAndDates;
+import com.booking.business.booking.model.State;
 import com.booking.business.booking.repository.BookingRepository;
 import com.booking.business.booking.service.impl.BookingServiceImpl;
 import com.booking.business.property.service.PropertyService;
@@ -13,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -125,7 +127,7 @@ public class BookingServiceTest {
     void shouldNotCancelABookingWhenBookingIdIsNoValid() {
         //given
         final var bookingId = UUID.randomUUID();
-        when(this.bookingRepository.existsById(bookingId))
+        when(this.bookingRepository.existsByIdAndStates(bookingId, List.of(State.ACTIVE)))
                 .thenReturn(false);
 
         //when then
@@ -137,7 +139,7 @@ public class BookingServiceTest {
     void shouldCancelBooking() {
         //given
         final var bookingId = UUID.randomUUID();
-        when(this.bookingRepository.existsById(bookingId))
+        when(this.bookingRepository.existsByIdAndStates(bookingId, List.of(State.ACTIVE)))
                 .thenReturn(true);
         //when
         this.bookingService.cancelById(bookingId);
@@ -180,7 +182,7 @@ public class BookingServiceTest {
     void shouldNotDeleteWhenBookingIdIsNoValid() {
         //given
         final var bookingId = UUID.randomUUID();
-        when(this.bookingRepository.existsById(bookingId))
+        when(this.bookingRepository.existsByIdAndStates(bookingId, List.of(State.ACTIVE, State.CANCELED)))
                 .thenReturn(false);
 
         //when then
@@ -192,7 +194,7 @@ public class BookingServiceTest {
     void shouldDeleteBooking() {
         //given
         final var bookingId = UUID.randomUUID();
-        when(this.bookingRepository.existsById(bookingId))
+        when(this.bookingRepository.existsByIdAndStates(bookingId, List.of(State.ACTIVE, State.CANCELED)))
                 .thenReturn(true);
         //when
         this.bookingService.deleteById(bookingId);
@@ -275,6 +277,31 @@ public class BookingServiceTest {
         );
     }
 
+    @Test
+    void shouldNotUpdateGuestDetailsWhenBookingIdIsInvalid() {
+        //given
+        final var bookingId = UUID.randomUUID();
+        final var guestDetails = new GuestDetails(
+            "fullName",
+                "email",
+                "phone",
+                1,
+                0,
+                0,
+                "specialRequests"
+        );
+        when(this.bookingRepository.existsByIdAndStates(bookingId, List.of(State.ACTIVE)))
+                .thenReturn(false);
+        //when then
+        assertThrows(IllegalArgumentException.class,
+                () -> this.bookingService.updateGuestDetails(
+                    bookingId, guestDetails
+                ));
+
+        verify(this.bookingRepository, never()).updateGuestDetails(
+                any(UUID.class), any(GuestDetails.class)
+        );
+    }
 
     private void verifyWhenStartDateIsInvalid(Booking booking) {
         assertThrows(IllegalArgumentException.class,
