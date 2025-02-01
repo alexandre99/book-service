@@ -20,7 +20,7 @@ public interface BookingService {
 
     void deleteById(UUID id);
 
-    void updateReservationDates(UUID id, LocalDate startDate, LocalDate endDate);
+    void updateBookingDates(UUID id, LocalDate startDate, LocalDate endDate);
 
     void updateGuestDetails(UUID id, GuestDetails guestDetails);
 

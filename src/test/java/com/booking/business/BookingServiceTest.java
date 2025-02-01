@@ -204,18 +204,18 @@ public class BookingServiceTest {
     }
 
     @Test
-    void shouldNotUpdateReservationDatesWhenBookingIsNotValid() {
+    void shouldNotUpdateBookingDatesWhenBookingIsNotValid() {
         //given
         final var bookingId = UUID.randomUUID();
         when(this.bookingRepository.findPropertyByIdAndBookingActive(bookingId))
                 .thenReturn(Optional.empty());
         //when then
         assertThrows(IllegalArgumentException.class,
-                () -> this.bookingService.updateReservationDates(
+                () -> this.bookingService.updateBookingDates(
                     bookingId, LocalDate.now(), LocalDate.now()
                 ));
 
-        verify(this.bookingRepository, never()).updateReservationDates(
+        verify(this.bookingRepository, never()).updateBookingDates(
             any(UUID.class), any(LocalDate.class), any(LocalDate.class)
         );
     }
@@ -229,9 +229,9 @@ public class BookingServiceTest {
                 .thenReturn(Optional.of(propertyId));
         //when then
         assertThrows(IllegalArgumentException.class,
-            () -> this.bookingService.updateReservationDates(bookingId, LocalDate.now(), LocalDate.now()));
+            () -> this.bookingService.updateBookingDates(bookingId, LocalDate.now(), LocalDate.now()));
 
-        verify(this.bookingRepository, never()).updateReservationDates(
+        verify(this.bookingRepository, never()).updateBookingDates(
             any(UUID.class), any(LocalDate.class), any(LocalDate.class)
         );
     }
@@ -245,11 +245,11 @@ public class BookingServiceTest {
                 .thenReturn(Optional.of(propertyId));
         //when then
         assertThrows(IllegalArgumentException.class,
-            () -> this.bookingService.updateReservationDates(
+            () -> this.bookingService.updateBookingDates(
                 bookingId, LocalDate.now().plusDays(1), LocalDate.now())
         );
 
-        verify(this.bookingRepository, never()).updateReservationDates(
+        verify(this.bookingRepository, never()).updateBookingDates(
             any(UUID.class), any(LocalDate.class), any(LocalDate.class)
         );
     }
@@ -268,11 +268,11 @@ public class BookingServiceTest {
                 .thenReturn(Optional.of(propertyId));
         //when
         assertThrows(IllegalStateException.class,
-            () -> this.bookingService.updateReservationDates(
+            () -> this.bookingService.updateBookingDates(
                 bookingId, startDate, endDate
             ));
 
-        verify(this.bookingRepository, never()).updateReservationDates(
+        verify(this.bookingRepository, never()).updateBookingDates(
             any(UUID.class), any(LocalDate.class), any(LocalDate.class)
         );
     }

@@ -59,13 +59,13 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public void updateReservationDates(final UUID id,
-                                       final LocalDate startDate,
-                                       final LocalDate endDate) {
+    public void updateBookingDates(final UUID id,
+                                   final LocalDate startDate,
+                                   final LocalDate endDate) {
         final var propertyId = this.repository.findPropertyByIdAndBookingActive(id);
-        validateAction(propertyId.isEmpty(), "Updating date", id);
+        validateAction(propertyId.isEmpty(), "Updating booking dates", id);
         validateDates(new Booking(id, propertyId.get(), startDate, endDate, null));
-        this.repository.updateReservationDates(id, startDate, endDate);
+        this.repository.updateBookingDates(id, startDate, endDate);
     }
 
     @Override

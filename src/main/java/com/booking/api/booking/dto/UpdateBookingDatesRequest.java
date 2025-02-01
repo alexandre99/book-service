@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
-public record BookingUpdateReservationDatesRequest(
+public record UpdateBookingDatesRequest(
     @NotNull(message = "startDate must not be null")
     @FutureOrPresent(message = "startDate must be in the present or future")
     LocalDate startDate,

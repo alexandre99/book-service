@@ -1,7 +1,7 @@
 package com.booking.api.booking.controller;
 
 import com.booking.api.booking.dto.BookingRequestDTO;
-import com.booking.api.booking.dto.BookingUpdateReservationDatesRequest;
+import com.booking.api.booking.dto.UpdateBookingDatesRequest;
 import com.booking.api.booking.dto.GuestDetailsDTO;
 import com.booking.business.booking.model.Booking;
 import com.booking.business.booking.model.BookingView;
@@ -83,14 +83,14 @@ public class BookingController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}/update-reservation-dates")
-    public ResponseEntity<Void> updateReservationDates(
+    @PatchMapping("/{id}/update-booking-dates")
+    public ResponseEntity<Void> updateBookingDates(
             @PathVariable("id")
             final UUID id,
             @RequestBody
-            final BookingUpdateReservationDatesRequest bookingUpdateReservationDatesRequest) {
-        this.service.updateReservationDates(
-            id, bookingUpdateReservationDatesRequest.startDate(), bookingUpdateReservationDatesRequest.endDate()
+            final UpdateBookingDatesRequest updateBookingDatesRequest) {
+        this.service.updateBookingDates(
+            id, updateBookingDatesRequest.startDate(), updateBookingDatesRequest.endDate()
         );
         return ResponseEntity.noContent().build();
     }

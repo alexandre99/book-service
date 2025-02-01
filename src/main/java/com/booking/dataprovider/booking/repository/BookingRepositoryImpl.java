@@ -113,9 +113,9 @@ public class BookingRepositoryImpl implements BookingRepository {
 
     @Transactional
     @Override
-    public void updateReservationDates(final UUID id,
-                                       final LocalDate startDate,
-                                       final LocalDate endDate) {
+    public void updateBookingDates(final UUID id,
+                                   final LocalDate startDate,
+                                   final LocalDate endDate) {
         this.delegate.updateReservationDates(id, startDate, endDate);
     }
 
