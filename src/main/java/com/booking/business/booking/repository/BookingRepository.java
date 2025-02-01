@@ -25,4 +25,8 @@ public interface BookingRepository {
     boolean hasOverLap(UUID propertyId, LocalDate startDate, LocalDate endDate);
 
     boolean existsById(UUID id);
+
+    Optional<UUID> findPropertyByIdAndBookingActive(UUID id);
+
+    void updateReservationDates(UUID id, LocalDate startDate, LocalDate endDate);
 }

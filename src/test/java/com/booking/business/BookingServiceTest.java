@@ -6,7 +6,6 @@ import com.booking.business.booking.model.BookingWithPropertyAndDates;
 import com.booking.business.booking.repository.BookingRepository;
 import com.booking.business.booking.service.impl.BookingServiceImpl;
 import com.booking.business.property.service.PropertyService;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +16,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -85,7 +85,7 @@ public class BookingServiceTest {
             booking.propertyId(), booking.startDate(), booking.endDate()
         )).thenReturn(true);
         //when
-        Assertions.assertThrows(IllegalStateException.class,
+        assertThrows(IllegalStateException.class,
                 () -> this.bookingService.save(booking));
 
         verify(this.propertyService).validateProperty(booking.propertyId());
@@ -111,7 +111,7 @@ public class BookingServiceTest {
                 .when(this.propertyService).validateProperty(booking.propertyId());
 
         //when
-        Assertions.assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> this.bookingService.save(booking));
 
         verify(this.bookingRepository, never()).hasOverLap(
@@ -129,7 +129,7 @@ public class BookingServiceTest {
                 .thenReturn(false);
 
         //when then
-        Assertions.assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> this.bookingService.cancelById(bookingId));
     }
 
@@ -153,7 +153,7 @@ public class BookingServiceTest {
         when(this.bookingRepository.findPropertyAndDatesByIdAndCancelState(bookingId))
                 .thenReturn(Optional.empty());
         //when
-        Assertions.assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> this.bookingService.rebookById(bookingId));
         //then
         verify(this.bookingRepository, never()).rebookById(any(UUID.class));
@@ -184,7 +184,7 @@ public class BookingServiceTest {
                 .thenReturn(false);
 
         //when then
-        Assertions.assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> this.bookingService.deleteById(bookingId));
     }
 
@@ -201,8 +201,83 @@ public class BookingServiceTest {
         verify(this.bookingRepository).deleteById(any(UUID.class));
     }
 
+    @Test
+    void shouldNotUpdateReservationDatesWhenBookingIsNotValid() {
+        //given
+        final var bookingId = UUID.randomUUID();
+        when(this.bookingRepository.findPropertyByIdAndBookingActive(bookingId))
+                .thenReturn(Optional.empty());
+        //when then
+        assertThrows(IllegalArgumentException.class,
+                () -> this.bookingService.updateReservationDates(
+                    bookingId, LocalDate.now(), LocalDate.now()
+                ));
+
+        verify(this.bookingRepository, never()).updateReservationDates(
+            any(UUID.class), any(LocalDate.class), any(LocalDate.class)
+        );
+    }
+
+    @Test
+    void shouldNotUpdateReservationWhenStartDateIsEqualsToEndDate() {
+        //given
+        final var bookingId = UUID.randomUUID();
+        final var propertyId = UUID.randomUUID();
+        when(this.bookingRepository.findPropertyByIdAndBookingActive(bookingId))
+                .thenReturn(Optional.of(propertyId));
+        //when then
+        assertThrows(IllegalArgumentException.class,
+            () -> this.bookingService.updateReservationDates(bookingId, LocalDate.now(), LocalDate.now()));
+
+        verify(this.bookingRepository, never()).updateReservationDates(
+            any(UUID.class), any(LocalDate.class), any(LocalDate.class)
+        );
+    }
+
+    @Test
+    void shouldNotUpdateReservationWhenStartDateIsAfterToEndDate() {
+        //given
+        final var bookingId = UUID.randomUUID();
+        final var propertyId = UUID.randomUUID();
+        when(this.bookingRepository.findPropertyByIdAndBookingActive(bookingId))
+                .thenReturn(Optional.of(propertyId));
+        //when then
+        assertThrows(IllegalArgumentException.class,
+            () -> this.bookingService.updateReservationDates(
+                bookingId, LocalDate.now().plusDays(1), LocalDate.now())
+        );
+
+        verify(this.bookingRepository, never()).updateReservationDates(
+            any(UUID.class), any(LocalDate.class), any(LocalDate.class)
+        );
+    }
+
+    @Test
+    void shouldNotUpdateReservationWhenThereIsAnOverlap() {
+        //given
+        final var startDate = LocalDate.now();
+        final var endDate = LocalDate.now().plusDays(1);
+        final var bookingId = UUID.randomUUID();
+        final var propertyId = UUID.randomUUID();
+        when(this.bookingRepository.hasOverLap(
+            propertyId, startDate, endDate
+        )).thenReturn(true);
+        when(this.bookingRepository.findPropertyByIdAndBookingActive(bookingId))
+                .thenReturn(Optional.of(propertyId));
+        //when
+        assertThrows(IllegalStateException.class,
+            () -> this.bookingService.updateReservationDates(
+                bookingId, startDate, endDate
+            ));
+
+        verify(this.bookingRepository, never()).updateReservationDates(
+            any(UUID.class), any(LocalDate.class), any(LocalDate.class)
+        );
+    }
+
+
     private void verifyWhenStartDateIsInvalid(Booking booking) {
-        Assertions.assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> this.bookingService.save(booking));
 
         verify(this.propertyService).validateProperty(booking.propertyId());

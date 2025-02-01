@@ -73,4 +73,22 @@ public interface BookingJpaEntityRepository extends JpaRepository<BookingJpaEnti
     Optional<BookingJpaEntity> findByIdAndStateNot(UUID id, State state);
 
     boolean existsByIdAndStateNot(UUID id, State state);
+
+    @Query("""
+            SELECT b.property.id FROM Booking b
+            WHERE b.id =:id AND b.state =:active
+        """)
+    Optional<UUID> findPropertyByIdAndBookingActive(@Param("id") UUID id,
+                                             @Param("active") State active);
+
+    @Modifying
+    @Query("""
+            UPDATE Booking b SET b.startDate = :startDate, b.endDate = :endDate  WHERE b.id =:id
+        """)
+    void updateReservationDates(@Param("id")
+                                UUID id,
+                                @Param("startDate")
+                                LocalDate startDate,
+                                @Param("endDate")
+                                LocalDate localDate);
 }

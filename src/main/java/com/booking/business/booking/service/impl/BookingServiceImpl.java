@@ -9,6 +9,7 @@ import com.booking.business.property.service.PropertyService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,11 +40,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public void cancelById(final UUID id) {
         final var isValid = this.repository.existsById(id);
-        if (!isValid) {
-            throw new IllegalArgumentException(
-                "Cancellation failed: The provided ID %s is invalid.".formatted(id)
-            );
-        }
+        validateAction(!isValid, "Cancellation", id);
         this.repository.cancelById(id);
     }
 
@@ -59,19 +56,34 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public void deleteById(final UUID id) {
         final var isValid = this.repository.existsById(id);
-        if (!isValid) {
+        validateAction(!isValid, "Deletion", id);
+        this.repository.deleteById(id);
+    }
+
+    @Override
+    public void updateReservationDates(final UUID id,
+                                       final LocalDate startDate,
+                                       final LocalDate endDate) {
+        final var propertyId = this.repository.findPropertyByIdAndBookingActive(id);
+        validateAction(propertyId.isEmpty(), "Updating date", id);
+        validateDates(new Booking(id, propertyId.get(), startDate, endDate, null));
+        this.repository.updateReservationDates(id, startDate, endDate);
+    }
+
+    private void validateAction(final boolean isInvalidToApplyAction,
+                                final String action,
+                                final UUID id) {
+        if (isInvalidToApplyAction) {
             throw new IllegalArgumentException(
-                "Deletion failed: The provided ID %s is invalid.".formatted(id)
+                "%s failed. The provided ID %s is invalid".formatted(action, id)
             );
         }
-        this.repository.deleteById(id);
     }
 
     private void processRebooking(final UUID bookingId, final BookingWithPropertyAndDates booking) {
         validateOverLap(booking.propertyId(), booking.startDate(), booking.endDate());
         this.repository.rebookById(bookingId);
     }
-
 
     private void validateDates(final Booking booking) {
         validateStartDateEqualsOrAfterEndDate(booking);

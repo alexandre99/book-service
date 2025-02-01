@@ -103,4 +103,17 @@ public class BookingRepositoryImpl implements BookingRepository {
     public boolean existsById(final UUID id) {
         return this.delegate.existsByIdAndStateNot(id, State.DELETED);
     }
+
+    @Override
+    public Optional<UUID> findPropertyByIdAndBookingActive(final UUID id) {
+        return this.delegate.findPropertyByIdAndBookingActive(id, State.ACTIVE);
+    }
+
+    @Transactional
+    @Override
+    public void updateReservationDates(final UUID id,
+                                       final LocalDate startDate,
+                                       final LocalDate endDate) {
+        this.delegate.updateReservationDates(id, startDate, endDate);
+    }
 }

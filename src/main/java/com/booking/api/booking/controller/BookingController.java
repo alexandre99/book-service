@@ -1,6 +1,7 @@
 package com.booking.api.booking.controller;
 
 import com.booking.api.booking.dto.BookingRequestDTO;
+import com.booking.api.booking.dto.BookingUpdateReservationDatesRequest;
 import com.booking.business.booking.model.Booking;
 import com.booking.business.booking.model.BookingView;
 import com.booking.business.booking.model.GuestDetails;
@@ -60,14 +61,14 @@ public class BookingController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PatchMapping("/cancel/{id}")
+    @PatchMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelById(@PathVariable("id")
                                            final UUID id) {
         this.service.cancelById(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/rebook/{id}")
+    @PatchMapping("/{id}/rebook")
     public ResponseEntity<Void> rebookById(@PathVariable("id")
                                            final UUID id) {
         this.service.rebookById(id);
@@ -78,6 +79,17 @@ public class BookingController {
     public ResponseEntity<Void> deleteById(@PathVariable("id")
                                            final UUID id) {
         this.service.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/update-reservation-dates")
+    public ResponseEntity<Void> rebookById(@PathVariable("id")
+                                           final UUID id,
+                                           @RequestBody
+                                           final BookingUpdateReservationDatesRequest bookingUpdateReservationDatesRequest) {
+        this.service.updateReservationDates(
+            id, bookingUpdateReservationDatesRequest.startDate(), bookingUpdateReservationDatesRequest.endDate()
+        );
         return ResponseEntity.noContent().build();
     }
 
