@@ -38,14 +38,33 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public void cancelById(final UUID id) {
+        final var isValid = this.repository.existsById(id);
+        if (!isValid) {
+            throw new IllegalArgumentException(
+                "Cancellation failed: The provided ID %s is invalid.".formatted(id)
+            );
+        }
         this.repository.cancelById(id);
     }
 
     @Override
     public void rebookById(final UUID id) {
         final var bookingWithPropertyAndDates = this.repository.findPropertyAndDatesByIdAndCancelState(id)
-                .orElseThrow(() -> new IllegalArgumentException("Booking id %s is not valid".formatted(id)));
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "Rebooking failed: The provided ID %s is invalid.".formatted(id)
+                ));
         this.processRebooking(id, bookingWithPropertyAndDates);
+    }
+
+    @Override
+    public void deleteById(final UUID id) {
+        final var isValid = this.repository.existsById(id);
+        if (!isValid) {
+            throw new IllegalArgumentException(
+                "Deletion failed: The provided ID %s is invalid.".formatted(id)
+            );
+        }
+        this.repository.deleteById(id);
     }
 
     private void processRebooking(final UUID bookingId, final BookingWithPropertyAndDates booking) {

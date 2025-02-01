@@ -37,7 +37,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 
     @Override
     public Optional<BookingView> findById(final UUID id) {
-        return this.delegate.findById(id)
+        return this.delegate.findByIdAndStateNot(id, State.DELETED)
                 .flatMap(entity -> {
                     final var propertyDetails = new BookedPropertyDetailsView(
                       entity.getProperty().getId(),
@@ -75,6 +75,12 @@ public class BookingRepositoryImpl implements BookingRepository {
         this.delegate.rebookById(id, State.ACTIVE);
     }
 
+    @Transactional
+    @Override
+    public void deleteById(final UUID id) {
+        this.delegate.deleteById(id, State.DELETED);
+    }
+
     @Override
     public Optional<BookingWithPropertyAndDates> findPropertyAndDatesByIdAndCancelState(final UUID id) {
         return this.delegate.findPropertyAndDatesByIdAndCancelState(id, State.CANCELED)
@@ -91,5 +97,10 @@ public class BookingRepositoryImpl implements BookingRepository {
         return this.delegate.hasOverlap(
             propertyId, startDate, endDate, State.ACTIVE
         );
+    }
+
+    @Override
+    public boolean existsById(final UUID id) {
+        return this.delegate.existsByIdAndStateNot(id, State.DELETED);
     }
 }

@@ -122,9 +122,23 @@ public class BookingServiceTest {
     }
 
     @Test
-    void shouldCancelABooking() {
+    void shouldNotCancelABookingWhenBookingIdIsNoValid() {
         //given
         final var bookingId = UUID.randomUUID();
+        when(this.bookingRepository.existsById(bookingId))
+                .thenReturn(false);
+
+        //when then
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> this.bookingService.cancelById(bookingId));
+    }
+
+    @Test
+    void shouldCancelBooking() {
+        //given
+        final var bookingId = UUID.randomUUID();
+        when(this.bookingRepository.existsById(bookingId))
+                .thenReturn(true);
         //when
         this.bookingService.cancelById(bookingId);
         //
@@ -160,6 +174,31 @@ public class BookingServiceTest {
         //then
         verify(this.bookingRepository).rebookById(bookingId);
         verify(this.bookingRepository).rebookById(any(UUID.class));
+    }
+
+    @Test
+    void shouldNotDeleteWhenBookingIdIsNoValid() {
+        //given
+        final var bookingId = UUID.randomUUID();
+        when(this.bookingRepository.existsById(bookingId))
+                .thenReturn(false);
+
+        //when then
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> this.bookingService.deleteById(bookingId));
+    }
+
+    @Test
+    void shouldDeleteBooking() {
+        //given
+        final var bookingId = UUID.randomUUID();
+        when(this.bookingRepository.existsById(bookingId))
+                .thenReturn(true);
+        //when
+        this.bookingService.deleteById(bookingId);
+        //
+        verify(this.bookingRepository).deleteById(bookingId);
+        verify(this.bookingRepository).deleteById(any(UUID.class));
     }
 
     private void verifyWhenStartDateIsInvalid(Booking booking) {

@@ -73,4 +73,12 @@ public class BookingController {
         this.service.rebookById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable("id")
+                                           final UUID id) {
+        this.service.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

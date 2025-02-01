@@ -16,4 +16,6 @@ public interface BookingService {
 
     void rebookById(UUID id);
 
+    void deleteById(UUID id);
+
 }

@@ -62,5 +62,15 @@ public interface BookingJpaEntityRepository extends JpaRepository<BookingJpaEnti
             State canceled
     );
 
+    @Modifying
+    @Query("""
+            UPDATE Booking b SET b.state = :deleted WHERE b.id =:id
+        """)
+    void deleteById(@Param("id") UUID id,
+                    @Param("deleted")
+                    State state);
 
+    Optional<BookingJpaEntity> findByIdAndStateNot(UUID id, State state);
+
+    boolean existsByIdAndStateNot(UUID id, State state);
 }

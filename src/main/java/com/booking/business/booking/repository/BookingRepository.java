@@ -18,7 +18,11 @@ public interface BookingRepository {
 
     void rebookById(UUID id);
 
+    void deleteById(UUID id);
+
     Optional<BookingWithPropertyAndDates> findPropertyAndDatesByIdAndCancelState(UUID id);
 
     boolean hasOverLap(UUID propertyId, LocalDate startDate, LocalDate endDate);
+
+    boolean existsById(UUID id);
 }
