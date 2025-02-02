@@ -28,7 +28,7 @@ public class BlockPropertyJpaEntity {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    @Column(nullable = false)
+    @Column(updatable = false, nullable = false)
     @CreationTimestamp
     private Instant createdAt;
 
@@ -37,6 +37,8 @@ public class BlockPropertyJpaEntity {
     private Instant updatedAt;
 
     private boolean deleted;
+
+    public BlockPropertyJpaEntity() {}
 
     public BlockPropertyJpaEntity(
             final UUID id,

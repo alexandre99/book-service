@@ -1,8 +1,9 @@
 package com.booking.business;
 
 import com.booking.business.property.model.BlockProperty;
-import com.booking.business.property.service.BlockPropertyRepository;
+import com.booking.business.property.repository.BlockPropertyRepository;
 import com.booking.business.property.service.BlockPropertyService;
+import com.booking.business.property.service.PropertyService;
 import com.booking.business.property.service.impl.BlockPropertyServiceImpl;
 import com.booking.business.shared.service.OverlapValidationService;
 import com.booking.business.shared.service.impl.BlockPropertyOverlapValidationServiceImpl;
@@ -26,6 +27,7 @@ class BlockPropertyServiceTest {
     private final BlockPropertyRepository repository = mock(BlockPropertyRepository.class);
     private final OverlapValidationService blockPropertyOverlapValidationService = mock(BlockPropertyOverlapValidationServiceImpl.class);
     private final OverlapValidationService bookingOverlapValidationService = mock(BookingOverlapValidationServiceImpl.class);
+    private final PropertyService propertyService = mock(PropertyService.class);
     private BlockPropertyService service;
 
     @BeforeEach
@@ -33,7 +35,8 @@ class BlockPropertyServiceTest {
         this.service = new BlockPropertyServiceImpl(
             repository,
             blockPropertyOverlapValidationService,
-            bookingOverlapValidationService
+            bookingOverlapValidationService,
+            propertyService
         );
     }
 
@@ -60,6 +63,9 @@ class BlockPropertyServiceTest {
         verify(this.blockPropertyOverlapValidationService).validateOverLap(
             any(), any(), any(), anyString()
         );
+        verify(this.propertyService).validateProperty(block.propertyId());
+        verify(this.propertyService).validateProperty(any());
+
         verify(this.repository).save(block);
         verify(this.repository).save(any());
     }
@@ -173,6 +179,37 @@ class BlockPropertyServiceTest {
 
         verify(this.repository, never()).deleteById(blockId);
         verify(this.repository, never()).deleteById(any());
+    }
+
+    @Test
+    void shouldNotSaveBlockPropertyWhenPropertyIsIsInvalid() {
+        //given
+        final var block = buildBLock(
+            LocalDate.now(), LocalDate.now().plusDays(1)
+        );
+        doThrow(IllegalArgumentException.class).when(this.propertyService)
+                .validateProperty(block.propertyId());
+        //when then
+        assertThatIllegalArgumentException().isThrownBy(
+            () -> this.service.save(block)
+        );
+
+        verify(this.bookingOverlapValidationService).validateOverLap(
+                block.propertyId(), block.startDate(), block.endDate(), PROPERTY_BLOCK_FAILED_THERE_IS_A_BOOKING_IN_THESE_DATES
+        );
+        verify(this.bookingOverlapValidationService).validateOverLap(
+                any(), any(), any(), anyString()
+        );
+        verify(this.blockPropertyOverlapValidationService).validateOverLap(
+                block.propertyId(), block.startDate(), block.endDate(), PROPERTY_BLOCK_FAILED_BLOCK_DATES_IS_NOT_AVAILABLE
+        );
+        verify(this.blockPropertyOverlapValidationService).validateOverLap(
+                any(), any(), any(), anyString()
+        );
+        verify(this.propertyService).validateProperty(block.propertyId());
+        verify(this.propertyService).validateProperty(any());
+
+        verify(this.repository, never()).save(any());
     }
 
     private void verifyWhenStartDateIsInvalid(BlockProperty block) {

@@ -1,12 +1,15 @@
 package com.booking.business.property.service.impl;
 
+import com.booking.business.property.model.BlockPropertyPageableView;
+import com.booking.business.property.service.PropertyService;
 import com.booking.business.shared.service.OverlapValidationService;
 import com.booking.business.property.model.BlockProperty;
-import com.booking.business.property.service.BlockPropertyRepository;
+import com.booking.business.property.repository.BlockPropertyRepository;
 import com.booking.business.property.service.BlockPropertyService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -17,21 +20,34 @@ public class BlockPropertyServiceImpl implements BlockPropertyService {
     private final BlockPropertyRepository repository;
     private final OverlapValidationService blockPropertyOverlapValidationService;
     private final OverlapValidationService bookingOverlapValidationService;
+    private final PropertyService propertyService;
 
     public BlockPropertyServiceImpl(final BlockPropertyRepository repository,
                                     @Qualifier("blockPropertyOverlapValidationServiceImpl")
                                     final OverlapValidationService blockPropertyOverlapValidationService,
                                     @Qualifier("bookingOverlapValidationServiceImpl")
-                                    final OverlapValidationService bookingOverlapValidationService) {
+                                    final OverlapValidationService bookingOverlapValidationService,
+                                    final PropertyService propertyService) {
         this.repository = repository;
         this.blockPropertyOverlapValidationService = blockPropertyOverlapValidationService;
         this.bookingOverlapValidationService = bookingOverlapValidationService;
+        this.propertyService = propertyService;
     }
 
     @Override
     public UUID save(final BlockProperty blockProperty) {
         validate(blockProperty);
         return this.repository.save(blockProperty);
+    }
+
+    @Override
+    public Optional<BlockProperty> findById(UUID id) {
+        return this.repository.findById(id);
+    }
+
+    @Override
+    public BlockPropertyPageableView findAll(int page, int limit) {
+        return this.repository.findAll(page, limit);
     }
 
     @Override
@@ -49,6 +65,7 @@ public class BlockPropertyServiceImpl implements BlockPropertyService {
         validateBlockDates(blockProperty);
         validateExistenceBooking(blockProperty);
         validateBlockPropertyOverlap(blockProperty);
+        this.propertyService.validateProperty(blockProperty.propertyId());
     }
 
     private void validateBlockDates(final BlockProperty blockProperty) {

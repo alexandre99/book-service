@@ -2,6 +2,7 @@ package com.booking.api.property.controller;
 
 import com.booking.api.property.dto.BlockPropertyRequest;
 import com.booking.business.property.model.BlockProperty;
+import com.booking.business.property.model.BlockPropertyPageableView;
 import com.booking.business.property.service.BlockPropertyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +58,24 @@ public class BlockPropertyController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping
+    @GetMapping()
+    public ResponseEntity<BlockPropertyPageableView> findAll(@RequestParam(name = "page", defaultValue = "1")
+                                                             final int page,
+                                                             @RequestParam(name = "limit", defaultValue = "10")
+                                                             final int limit) {
+        final var blockPropertyPageableView = this.service.findAll(page, limit);
+        return ResponseEntity.ok(blockPropertyPageableView);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<BlockProperty> findById(@PathVariable("id")
+                                                     final UUID id) {
+        final var optionalBlockProperty = this.service.findById(id);
+        return optionalBlockProperty.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable("id")
                                             final UUID id) {
         this.service.deleteById(id);
