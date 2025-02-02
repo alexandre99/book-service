@@ -24,7 +24,7 @@ public class BlockPropertyControllerTest extends AbstractIntegrationTest {
     private static final String BASE_URL = "/block-property";
 
     @Autowired
-    private BlockPropertyJpaEntityRepository repository;
+    private BlockPropertyJpaEntityRepository entityRepository;
 
     @Autowired
     private PropertyMother propertyMother;
@@ -87,7 +87,7 @@ public class BlockPropertyControllerTest extends AbstractIntegrationTest {
                 .andExpect(status().isNoContent());
 
         //then
-        final var updatedBlockProperty = repository.findBlockPropertyById(
+        final var updatedBlockProperty = entityRepository.findBlockPropertyById(
                                                         UUID.fromString(blockPropertyId)
                                                     ).orElseThrow();
 
@@ -168,7 +168,7 @@ public class BlockPropertyControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void shouldDelete() throws Exception {
+    void shouldDeleteBlockProperty() throws Exception {
         //given
         final var propertyId = propertyMother.createProperties(1).get(0);
         final var blockPropertyRequest = new BlockPropertyRequest(
@@ -195,7 +195,7 @@ public class BlockPropertyControllerTest extends AbstractIntegrationTest {
                 .andExpect(status().isNoContent());
 
         //then
-        assertThat(this.repository.findBlockPropertyById(UUID.fromString(blockPropertyId))
+        assertThat(this.entityRepository.findBlockPropertyById(UUID.fromString(blockPropertyId))
                 .isEmpty()).isTrue();
     }
 
