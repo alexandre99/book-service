@@ -44,3 +44,133 @@ A Makefile is provided to simplify common tasks:
   Execute the following command to run the project:
   ```bash
   make run
+
+# cURL Commands
+
+## Create property
+
+```bash
+curl -i -X POST http://localhost:8080/property \
+     -H "Content-Type: application/json" \
+     -d '{
+           "name": "Studio RM - Seafront!",
+           "amenities":["Elevator", "Netflix"],
+           "address": "New York, EUA",
+           "hostName": "John Doe",
+           "checkInTime": "14:00",
+           "checkOutTime": "14:00",
+           "dailyRate": 200.00
+         }'
+```
+
+## Update property
+
+```bash
+curl -i -X PUT http://localhost:8080/property/:property-id \
+     -H "Content-Type: application/json" \
+     -d '{
+           "name": "Studio RM - Seafront",
+           "amenities":["Elevator", "Netflix", "Air conditional"],
+           "address": "New York, EUA",
+           "hostName": "John Doe",
+           "checkInTime": "14:00",
+           "checkOutTime": "14:00",
+           "dailyRate": 200.00
+         }'
+```
+
+## Create property block
+
+```bash
+curl -i -X POST http://localhost:8080/block-property \
+     -H "Content-Type: application/json" \
+     -d '{
+           "propertyId": :propertyId,
+           "startDate": "2025-06-29",
+           "endDate": "2025-06-30"
+         }'
+```
+
+## Update property block
+
+```bash
+curl -i -X PUT http://localhost:8080/block-property/:block-property-id \
+     -H "Content-Type: application/json" \
+     -d '{
+           "propertyId": :propertyId,
+           "startDate": "2025-06-15",
+           "endDate": "2025-06-16"
+         }'
+```
+
+## Delete property block
+
+```bash
+curl -i -X DELETE http://localhost:8080/block-property/:block-property-id
+```
+
+## Create booking
+
+```bash
+curl -i -X POST http://localhost:8080/booking \
+     -H "Content-Type: application/json" \
+     -d '{
+           "propertyId": :propertyId,
+           "startDate": "2025-06-27",
+           "endDate": "2025-06-28",
+           "guestDetails": {
+             "fullName": "John Doe",
+             "email": "johndoe@example.com",
+             "phone": "+1 123-456-7890",
+             "numberOfAdults": 2,
+             "numberOfChildren": 1,
+             "numberOfInfants": 0,
+             "specialRequests": "Late check-in, if possible."
+           }
+         }'
+```
+
+## Update booking dates
+
+```bash
+curl -i -X PATCH http://localhost:8080/booking/:booking-id/update-booking-dates \
+     -H "Content-Type: application/json" \
+     -d '{
+           "startDate": "2025-06-20",
+           "endDate": "2025-06-21"
+         }'
+```
+
+## Update guest details
+
+```bash
+curl -i -X PATCH http://localhost:8080/booking/:booking-id/update-guest-details \
+     -H "Content-Type: application/json" \
+     -d '{
+           "fullName": "John Doe 2",
+           "email": "johndoe2@example.com",
+           "phone": "+1 122-456-7890",
+           "numberOfAdults": 1,
+           "numberOfChildren": 0,
+           "numberOfInfants": 1,
+           "specialRequests": "2 Late check-in, if possible."
+         }'
+```
+
+## Cancel booking
+
+```bash
+curl -X PATCH http://localhost:8080/booking/:booking-id/cancel
+```
+
+## Rebook booking
+
+```bash
+curl -X PATCH http://localhost:8080/booking/:booking-id/rebook
+```
+
+## Delete booking
+
+```bash
+curl -X DELETE http://localhost:8080/booking/:booking-id
+```
