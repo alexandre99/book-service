@@ -6,7 +6,6 @@ import com.booking.dataprovider.property.entity.BlockPropertyJpaEntity;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Repository
@@ -28,13 +27,6 @@ public class BlockPropertyRepositoryImpl implements BlockPropertyRepository {
     @Override
     public void deleteById(final UUID id) {
         this.delegate.deleteById(id);
-    }
-
-    @Override
-    public boolean hasOverLap(final UUID propertyId,
-                              final LocalDate startDate,
-                              final LocalDate endDate) {
-        return this.delegate.hasOverlap(propertyId, startDate, endDate);
     }
 
     @Override

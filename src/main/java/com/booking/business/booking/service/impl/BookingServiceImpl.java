@@ -3,9 +3,10 @@ package com.booking.business.booking.service.impl;
 import com.booking.business.booking.model.*;
 import com.booking.business.booking.repository.BookingRepository;
 import com.booking.business.booking.service.BookingService;
-import com.booking.business.property.service.BlockPropertyService;
 import com.booking.business.property.service.PropertyService;
 import com.booking.business.booking.model.State;
+import com.booking.business.shared.service.OverlapValidationService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,14 +20,19 @@ public class BookingServiceImpl implements BookingService {
     public static final String BOOKING_DATES_OVERLAP_MESSAGE = "Booking dates is not available for reservation";
     private final BookingRepository repository;
     private final PropertyService propertyService;
-    private final BlockPropertyService blockPropertyService;
+    private final OverlapValidationService blockPropertyOverlapValidationService;
+    private final OverlapValidationService bookingOverlapValidationService;
 
     public BookingServiceImpl(final BookingRepository repository,
                               final PropertyService propertyService,
-                              final BlockPropertyService blockPropertyService) {
+                              @Qualifier("blockPropertyOverlapValidationServiceImpl")
+                              final OverlapValidationService blockPropertyOverlapValidationService,
+                              @Qualifier("bookingOverlapValidationServiceImpl")
+                              final OverlapValidationService bookingOverlapValidationService) {
         this.repository = repository;
         this.propertyService = propertyService;
-        this.blockPropertyService = blockPropertyService;
+        this.blockPropertyOverlapValidationService = blockPropertyOverlapValidationService;
+        this.bookingOverlapValidationService = bookingOverlapValidationService;
     }
 
     @Override
@@ -55,8 +61,8 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new IllegalArgumentException(
                     "Rebooking failed: The provided ID %s is invalid.".formatted(id)
                 ));
-        validateOverLap(
-            booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
+        validateBookingOverLap(
+            booking.propertyId(), booking.startDate(), booking.endDate()
         );
         this.repository.rebookById(id);
     }
@@ -87,17 +93,6 @@ public class BookingServiceImpl implements BookingService {
         this.repository.updateGuestDetails(id, guestDetails);
     }
 
-    @Override
-    public void validateOverLap(final UUID propertyId,
-                                 final LocalDate startDate,
-                                 final LocalDate endDate,
-                                 final String validationMessage) {
-        final var hasOverLap = this.repository.hasOverLap(propertyId, startDate, endDate);
-        if (hasOverLap) {
-            throw new IllegalStateException(validationMessage);
-        }
-    }
-
     private void validateAction(final boolean isInvalidToApplyAction,
                                 final String action,
                                 final UUID id) {
@@ -115,11 +110,19 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private void validateOverLaps(final Booking booking) {
-        validateOverLap(
+        this.validateBookingOverLap(
+            booking.propertyId(), booking.startDate(), booking.endDate()
+        );
+        this.blockPropertyOverlapValidationService.validateOverLap(
             booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
         );
-        this.blockPropertyService.validateOverLap(
-            booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
+    }
+
+    private void validateBookingOverLap(final UUID propertyId,
+                                        final LocalDate startDate,
+                                        final LocalDate endDate) {
+        this.bookingOverlapValidationService.validateOverLap(
+            propertyId, startDate, endDate, BOOKING_DATES_OVERLAP_MESSAGE
         );
     }
 

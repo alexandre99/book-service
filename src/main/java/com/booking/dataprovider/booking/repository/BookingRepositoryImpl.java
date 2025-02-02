@@ -87,15 +87,6 @@ public class BookingRepositoryImpl implements BookingRepository {
     }
 
     @Override
-    public boolean hasOverLap(final UUID propertyId,
-                              final LocalDate startDate,
-                              final LocalDate endDate) {
-        return this.delegate.hasOverlap(
-            propertyId, startDate, endDate, State.ACTIVE
-        );
-    }
-
-    @Override
     public boolean existsByIdAndStates(final UUID id,
                                        final List<State> states) {
         return this.delegate.existsByIdAndStateIn(id, states);

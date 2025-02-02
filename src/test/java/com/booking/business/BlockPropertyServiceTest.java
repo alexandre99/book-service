@@ -1,35 +1,41 @@
 package com.booking.business;
 
-import com.booking.business.booking.service.BookingService;
 import com.booking.business.property.model.BlockProperty;
 import com.booking.business.property.service.BlockPropertyRepository;
+import com.booking.business.property.service.BlockPropertyService;
 import com.booking.business.property.service.impl.BlockPropertyServiceImpl;
+import com.booking.business.shared.service.OverlapValidationService;
+import com.booking.business.shared.service.impl.BlockPropertyOverlapValidationServiceImpl;
+import com.booking.business.shared.service.impl.BookingOverlapValidationServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static com.booking.business.property.service.impl.BlockPropertyServiceImpl.PROPERTY_BLOCK_FAILED_BLOCK_DATES_IS_NOT_AVAILABLE;
 import static com.booking.business.property.service.impl.BlockPropertyServiceImpl.PROPERTY_BLOCK_FAILED_THERE_IS_A_BOOKING_IN_THESE_DATES;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class BlockPropertyServiceTest {
 
-    @Mock
-    private BlockPropertyRepository repository;
 
-    @Mock
-    private BookingService bookingService;
+    private final BlockPropertyRepository repository = mock(BlockPropertyRepository.class);
+    private final OverlapValidationService blockPropertyOverlapValidationService = mock(BlockPropertyOverlapValidationServiceImpl.class);
+    private final OverlapValidationService bookingOverlapValidationService = mock(BookingOverlapValidationServiceImpl.class);
+    private BlockPropertyService service;
 
-    @InjectMocks
-    private BlockPropertyServiceImpl service;
+    @BeforeEach
+    void setup() {
+        this.service = new BlockPropertyServiceImpl(
+            repository,
+            blockPropertyOverlapValidationService,
+            bookingOverlapValidationService
+        );
+    }
 
     @Test
     void shouldSaveBlock() {
@@ -42,17 +48,17 @@ class BlockPropertyServiceTest {
         this.service.save(block);
 
         //then
-        verify(this.bookingService).validateOverLap(
+        verify(this.bookingOverlapValidationService).validateOverLap(
             block.propertyId(), block.startDate(), block.endDate(), PROPERTY_BLOCK_FAILED_THERE_IS_A_BOOKING_IN_THESE_DATES
         );
-        verify(this.bookingService).validateOverLap(
+        verify(this.bookingOverlapValidationService).validateOverLap(
             any(), any(), any(), anyString()
         );
-        verify(this.repository).hasOverLap(
-            block.propertyId(), block.startDate(), block.endDate()
+        verify(this.blockPropertyOverlapValidationService).validateOverLap(
+            block.propertyId(), block.startDate(), block.endDate(), PROPERTY_BLOCK_FAILED_BLOCK_DATES_IS_NOT_AVAILABLE
         );
-        verify(this.repository).hasOverLap(
-            any(), any(), any()
+        verify(this.blockPropertyOverlapValidationService).validateOverLap(
+            any(), any(), any(), anyString()
         );
         verify(this.repository).save(block);
         verify(this.repository).save(any());
@@ -82,7 +88,7 @@ class BlockPropertyServiceTest {
             LocalDate.now(), LocalDate.now().plusDays(1)
         );
 
-        doThrow(IllegalArgumentException.class).when(this.bookingService).validateOverLap(
+        doThrow(IllegalArgumentException.class).when(this.bookingOverlapValidationService).validateOverLap(
             block.propertyId(), block.startDate(), block.endDate(), PROPERTY_BLOCK_FAILED_THERE_IS_A_BOOKING_IN_THESE_DATES
         );
 
@@ -92,14 +98,14 @@ class BlockPropertyServiceTest {
         );
 
         //then
-        verify(this.bookingService).validateOverLap(
-            block.propertyId(), block.startDate(), block.endDate(), PROPERTY_BLOCK_FAILED_THERE_IS_A_BOOKING_IN_THESE_DATES
+        verify(this.bookingOverlapValidationService).validateOverLap(
+                block.propertyId(), block.startDate(), block.endDate(), PROPERTY_BLOCK_FAILED_THERE_IS_A_BOOKING_IN_THESE_DATES
         );
-        verify(this.bookingService).validateOverLap(
-            any(), any(), any(), anyString()
+        verify(this.bookingOverlapValidationService).validateOverLap(
+                any(), any(), any(), anyString()
         );
-        verify(this.repository, never()).hasOverLap(
-            any(), any(), any()
+        verify(this.blockPropertyOverlapValidationService, never()).validateOverLap(
+                any(), any(), any(), anyString()
         );
         verify(this.repository, never()).save(any());
     }
@@ -110,9 +116,9 @@ class BlockPropertyServiceTest {
         final var block = buildBLock(
             LocalDate.now(), LocalDate.now().plusDays(1)
         );
-        when(this.repository.hasOverLap(
-            block.propertyId(), block.startDate(), block.endDate()
-        )).thenReturn(true);
+        doThrow(IllegalStateException.class).when(this.blockPropertyOverlapValidationService).validateOverLap(
+            block.propertyId(), block.startDate(), block.endDate(), PROPERTY_BLOCK_FAILED_BLOCK_DATES_IS_NOT_AVAILABLE
+        );
 
         //when then
         assertThatIllegalStateException().isThrownBy(
@@ -120,17 +126,17 @@ class BlockPropertyServiceTest {
         );
 
         //then
-        verify(this.bookingService).validateOverLap(
+        verify(this.bookingOverlapValidationService).validateOverLap(
                 block.propertyId(), block.startDate(), block.endDate(), PROPERTY_BLOCK_FAILED_THERE_IS_A_BOOKING_IN_THESE_DATES
         );
-        verify(this.bookingService).validateOverLap(
+        verify(this.bookingOverlapValidationService).validateOverLap(
                 any(), any(), any(), anyString()
         );
-        verify(this.repository).hasOverLap(
-                block.propertyId(), block.startDate(), block.endDate()
+        verify(this.blockPropertyOverlapValidationService).validateOverLap(
+                block.propertyId(), block.startDate(), block.endDate(), PROPERTY_BLOCK_FAILED_BLOCK_DATES_IS_NOT_AVAILABLE
         );
-        verify(this.repository).hasOverLap(
-                any(), any(), any()
+        verify(this.blockPropertyOverlapValidationService).validateOverLap(
+                any(), any(), any(), anyString()
         );
         verify(this.repository, never()).save(any());
     }
@@ -174,11 +180,11 @@ class BlockPropertyServiceTest {
         assertThatIllegalArgumentException().isThrownBy(
                 () -> this.service.save(block)
         );
-        verify(this.bookingService, never()).validateOverLap(
+        verify(this.bookingOverlapValidationService, never()).validateOverLap(
                 any(), any(), any(), anyString()
         );
-        verify(this.repository, never()).hasOverLap(
-                any(), any(), any()
+        verify(this.blockPropertyOverlapValidationService, never()).validateOverLap(
+            any(), any(), any(), anyString()
         );
         verify(this.repository, never()).save(any());
     }

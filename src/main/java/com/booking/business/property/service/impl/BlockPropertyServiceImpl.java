@@ -1,25 +1,31 @@
 package com.booking.business.property.service.impl;
 
-import com.booking.business.booking.service.BookingService;
+import com.booking.business.shared.service.OverlapValidationService;
 import com.booking.business.property.model.BlockProperty;
 import com.booking.business.property.service.BlockPropertyRepository;
 import com.booking.business.property.service.BlockPropertyService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Service
 public class BlockPropertyServiceImpl implements BlockPropertyService {
 
     public static final String PROPERTY_BLOCK_FAILED_THERE_IS_A_BOOKING_IN_THESE_DATES = "Property block failed. There is a booking in these dates";
+    public static final String PROPERTY_BLOCK_FAILED_BLOCK_DATES_IS_NOT_AVAILABLE = "Property block failed. Block dates is not available.";
     private final BlockPropertyRepository repository;
-    private final BookingService bookingService;
+    private final OverlapValidationService blockPropertyOverlapValidationService;
+    private final OverlapValidationService bookingOverlapValidationService;
 
     public BlockPropertyServiceImpl(final BlockPropertyRepository repository,
-                                    final BookingService bookingService) {
+                                    @Qualifier("blockPropertyOverlapValidationServiceImpl")
+                                    final OverlapValidationService blockPropertyOverlapValidationService,
+                                    @Qualifier("bookingOverlapValidationServiceImpl")
+                                    final OverlapValidationService bookingOverlapValidationService) {
         this.repository = repository;
-        this.bookingService = bookingService;
+        this.blockPropertyOverlapValidationService = blockPropertyOverlapValidationService;
+        this.bookingOverlapValidationService = bookingOverlapValidationService;
     }
 
     @Override
@@ -39,25 +45,10 @@ public class BlockPropertyServiceImpl implements BlockPropertyService {
         this.repository.deleteById(id);
     }
 
-    @Override
-    public void validateOverLap(
-            final UUID propertyId,
-            final LocalDate startDate,
-            final LocalDate endDate,
-            final String validationMessage) {
-        final var hasOverLap = this.repository.hasOverLap(propertyId, startDate, endDate);
-        if (hasOverLap) {
-            throw new IllegalStateException(validationMessage);
-        }
-    }
-
-    private void validateExistenceBooking(final BlockProperty blockProperty) {
-        this.bookingService.validateOverLap(
-            blockProperty.propertyId(),
-            blockProperty.startDate(),
-            blockProperty.endDate(),
-            PROPERTY_BLOCK_FAILED_THERE_IS_A_BOOKING_IN_THESE_DATES
-        );
+    private void validate(final BlockProperty blockProperty) {
+        validateBlockDates(blockProperty);
+        validateExistenceBooking(blockProperty);
+        validateBlockPropertyOverlap(blockProperty);
     }
 
     private void validateBlockDates(final BlockProperty blockProperty) {
@@ -66,14 +57,21 @@ public class BlockPropertyServiceImpl implements BlockPropertyService {
         }
     }
 
-    private void validate(final BlockProperty blockProperty) {
-        validateBlockDates(blockProperty);
-        validateExistenceBooking(blockProperty);
-        validateOverLap(
-            blockProperty.propertyId(),
-            blockProperty.startDate(),
-            blockProperty.endDate(),
-            "Property block failed. Block dates is not available."
+    private void validateBlockPropertyOverlap(final BlockProperty blockProperty) {
+        this.blockPropertyOverlapValidationService.validateOverLap(
+                blockProperty.propertyId(),
+                blockProperty.startDate(),
+                blockProperty.endDate(),
+                PROPERTY_BLOCK_FAILED_BLOCK_DATES_IS_NOT_AVAILABLE
+        );
+    }
+
+    private void validateExistenceBooking(final BlockProperty blockProperty) {
+        this.bookingOverlapValidationService.validateOverLap(
+                blockProperty.propertyId(),
+                blockProperty.startDate(),
+                blockProperty.endDate(),
+                PROPERTY_BLOCK_FAILED_THERE_IS_A_BOOKING_IN_THESE_DATES
         );
     }
 

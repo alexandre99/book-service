@@ -5,10 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.lang.NonNullApi;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Repository
@@ -21,22 +19,8 @@ public interface BlockPropertyJpaEntityRepository extends JpaRepository<BlockPro
     @Override
     void deleteById(@Param("id") UUID id);
 
-    @Query(value = """
-            SELECT COUNT(b) > 0 FROM BlockProperty bp
-            WHERE bp.property.id = :propertyId
-            AND bp.startDate < :endDate
-            AND bp.endDate > :startDate
-            AND deleted = FALSE
-        """)
-    boolean hasOverlap(@Param("propertyId")
-                       UUID propertyId,
-                       @Param("startDate")
-                       LocalDate start,
-                       @Param("endDate")
-                       LocalDate end);
-
     @Query("""
-            SELECT COUNT(b) > 0 FROM BlockProperty bp
+            SELECT COUNT(bp) > 0 FROM BlockProperty bp
             WHERE bp.id =:id AND bp.deleted = FALSE
         """)
     @Override

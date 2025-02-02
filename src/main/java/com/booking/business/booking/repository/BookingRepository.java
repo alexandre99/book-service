@@ -23,8 +23,6 @@ public interface BookingRepository {
 
     Optional<BookingWithPropertyAndDates> findPropertyAndDatesByIdAndCancelState(UUID id);
 
-    boolean hasOverLap(UUID propertyId, LocalDate startDate, LocalDate endDate);
-
     boolean existsByIdAndStates(UUID id, List<State> states);
 
     Optional<UUID> findPropertyByIdAndBookingActive(UUID id);

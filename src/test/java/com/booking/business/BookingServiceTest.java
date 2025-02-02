@@ -5,38 +5,42 @@ import com.booking.business.booking.model.GuestDetails;
 import com.booking.business.booking.model.BookingWithPropertyAndDates;
 import com.booking.business.booking.model.State;
 import com.booking.business.booking.repository.BookingRepository;
+import com.booking.business.booking.service.BookingService;
 import com.booking.business.booking.service.impl.BookingServiceImpl;
-import com.booking.business.property.service.BlockPropertyService;
 import com.booking.business.property.service.PropertyService;
+import com.booking.business.shared.service.OverlapValidationService;
+import com.booking.business.shared.service.impl.BlockPropertyOverlapValidationServiceImpl;
+import com.booking.business.shared.service.impl.BookingOverlapValidationServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.booking.business.booking.service.impl.BookingServiceImpl.BOOKING_DATES_OVERLAP_MESSAGE;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class BookingServiceTest {
 
-    @Mock
-    private BlockPropertyService blockPropertyService;
+    private final BookingRepository bookingRepository = mock(BookingRepository.class);
+    private final PropertyService propertyService = mock(PropertyService.class);
+    private final OverlapValidationService blockPropertyOverlapValidationService = mock(BlockPropertyOverlapValidationServiceImpl.class);
+    private final OverlapValidationService bookingOverlapValidationService = mock(BookingOverlapValidationServiceImpl.class);
+    private BookingService bookingService;
 
-    @Mock
-    private PropertyService propertyService;
-
-    @Mock
-    private BookingRepository bookingRepository;
-
-    @InjectMocks
-    private BookingServiceImpl bookingService;
+    @BeforeEach
+    void setup() {
+        this.bookingService = new BookingServiceImpl(
+            bookingRepository,
+            propertyService,
+            blockPropertyOverlapValidationService,
+            bookingOverlapValidationService
+        );
+    }
 
     @Test
     void shouldSaveBooking() {
@@ -50,11 +54,18 @@ class BookingServiceTest {
         verify(this.propertyService).validateProperty(booking.propertyId());
         verify(this.propertyService).validateProperty(any());
 
-        verify(this.bookingRepository).hasOverLap(
-            booking.propertyId(), booking.startDate(), booking.endDate()
+        verify(this.bookingOverlapValidationService).validateOverLap(
+            booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
         );
-        verify(this.bookingRepository).hasOverLap(
-            any(), any(), any()
+        verify(this.bookingOverlapValidationService).validateOverLap(
+            any(), any(), any(), anyString()
+        );
+
+        verify(this.blockPropertyOverlapValidationService).validateOverLap(
+                booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
+        );
+        verify(this.blockPropertyOverlapValidationService).validateOverLap(
+                any(), any(), any(), anyString()
         );
 
         verify(this.bookingRepository).save(booking);
@@ -87,9 +98,10 @@ class BookingServiceTest {
         final var booking = getBooking(
             LocalDate.now(), LocalDate.now().plusDays(1)
         );
-        when(this.bookingRepository.hasOverLap(
-            booking.propertyId(), booking.startDate(), booking.endDate()
-        )).thenReturn(true);
+        doThrow(IllegalStateException.class).when(this.bookingOverlapValidationService).validateOverLap(
+            booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
+        );
+
         //when
         assertThrows(IllegalStateException.class,
                 () -> this.bookingService.save(booking));
@@ -97,11 +109,15 @@ class BookingServiceTest {
         verify(this.propertyService).validateProperty(booking.propertyId());
         verify(this.propertyService).validateProperty(any(UUID.class));
 
-        verify(this.bookingRepository).hasOverLap(
-            booking.propertyId(), booking.startDate(), booking.endDate()
+        verify(this.bookingOverlapValidationService).validateOverLap(
+                booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
         );
-        verify(this.bookingRepository).hasOverLap(
-            any(), any(), any()
+        verify(this.bookingOverlapValidationService).validateOverLap(
+                any(), any(), any(), anyString()
+        );
+
+        verify(this.blockPropertyOverlapValidationService, never()).validateOverLap(
+                any(), any(), any(), anyString()
         );
 
         verify(this.bookingRepository, never()).save(any());
@@ -120,10 +136,13 @@ class BookingServiceTest {
         assertThrows(IllegalArgumentException.class,
                 () -> this.bookingService.save(booking));
 
-        verify(this.bookingRepository, never()).hasOverLap(
-            any(), any(), any()
+        verify(this.bookingOverlapValidationService, never()).validateOverLap(
+                any(), any(), any(), anyString()
         );
 
+        verify(this.blockPropertyOverlapValidationService, never()).validateOverLap(
+                any(), any(), any(), anyString()
+        );
         verify(this.bookingRepository, never()).save(any());
     }
 
@@ -265,9 +284,11 @@ class BookingServiceTest {
         final var endDate = LocalDate.now().plusDays(1);
         final var bookingId = UUID.randomUUID();
         final var propertyId = UUID.randomUUID();
-        when(this.bookingRepository.hasOverLap(
-            propertyId, startDate, endDate
-        )).thenReturn(true);
+
+        doThrow(IllegalStateException.class).when(this.bookingOverlapValidationService).validateOverLap(
+            propertyId, startDate, endDate, BOOKING_DATES_OVERLAP_MESSAGE
+        );
+
         when(this.bookingRepository.findPropertyByIdAndBookingActive(bookingId))
                 .thenReturn(Optional.of(propertyId));
         //when
@@ -275,6 +296,17 @@ class BookingServiceTest {
             () -> this.bookingService.updateBookingDates(
                 bookingId, startDate, endDate
             ));
+
+        verify(this.bookingOverlapValidationService).validateOverLap(
+            propertyId, startDate, endDate, BOOKING_DATES_OVERLAP_MESSAGE
+        );
+        verify(this.bookingOverlapValidationService).validateOverLap(
+                any(), any(), any(), anyString()
+        );
+
+        verify(this.blockPropertyOverlapValidationService, never()).validateOverLap(
+                any(), any(), any(), anyString()
+        );
 
         verify(this.bookingRepository, never()).updateBookingDates(
             any(), any(), any()
@@ -332,7 +364,36 @@ class BookingServiceTest {
 
     @Test
     void shouldNotSaveBookingWhenThereIsAnOverlapWithBlockProperty() {
+        //given
+        final var booking = getBooking(
+            LocalDate.now(), LocalDate.now().plusDays(1)
+        );
+        doThrow(IllegalStateException.class).when(this.blockPropertyOverlapValidationService).validateOverLap(
+            booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
+        );
 
+        //when
+        assertThrows(IllegalStateException.class,
+                () -> this.bookingService.save(booking));
+
+        verify(this.propertyService).validateProperty(booking.propertyId());
+        verify(this.propertyService).validateProperty(any(UUID.class));
+
+        verify(this.bookingOverlapValidationService).validateOverLap(
+                booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
+        );
+        verify(this.bookingOverlapValidationService).validateOverLap(
+                any(), any(), any(), anyString()
+        );
+
+        verify(this.blockPropertyOverlapValidationService).validateOverLap(
+                booking.propertyId(), booking.startDate(), booking.endDate(), BOOKING_DATES_OVERLAP_MESSAGE
+        );
+        verify(this.blockPropertyOverlapValidationService).validateOverLap(
+                any(), any(), any(), anyString()
+        );
+
+        verify(this.bookingRepository, never()).save(any());
     }
 
     private void verifyWhenStartDateIsInvalid(Booking booking) {
@@ -341,8 +402,12 @@ class BookingServiceTest {
 
         verify(this.propertyService, never()).validateProperty(any());
 
-        verify(this.bookingRepository, never()).hasOverLap(
-            any(), any(), any()
+        verify(this.bookingOverlapValidationService, never()).validateOverLap(
+                any(), any(), any(), anyString()
+        );
+
+        verify(this.blockPropertyOverlapValidationService, never()).validateOverLap(
+                any(), any(), any(), anyString()
         );
 
         verify(this.bookingRepository, never()).save(any());

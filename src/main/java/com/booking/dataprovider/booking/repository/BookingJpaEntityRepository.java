@@ -17,22 +17,6 @@ import java.util.UUID;
 @Repository
 public interface BookingJpaEntityRepository extends JpaRepository<BookingJpaEntity, UUID> {
 
-    @Query(value = """
-            SELECT COUNT(b) > 0 FROM Booking b
-            WHERE b.property.id = :propertyId
-            AND b.startDate < :endDate
-            AND b.endDate > :startDate
-            AND state = :active
-        """)
-    boolean hasOverlap(@Param("propertyId")
-                       UUID propertyId,
-                       @Param("startDate")
-                       LocalDate start,
-                       @Param("endDate")
-                       LocalDate end,
-                       @Param("active")
-                       State active);
-
     @Modifying
     @Query("""
             UPDATE Booking b SET b.state = :canceled WHERE b.id =:id

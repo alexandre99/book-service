@@ -39,7 +39,7 @@ public class PropertyJpaEntity {
     @Column(nullable = false)
     private Float dailyRate;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private Instant createdAt;
 
