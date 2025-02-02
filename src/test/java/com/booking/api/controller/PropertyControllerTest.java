@@ -4,7 +4,6 @@ import com.booking.dataprovider.property.repository.PropertyJpaEntityRepository;
 import com.booking.shared.PropertyMother;
 import com.booking.api.property.dto.PropertyRequestDTO;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
