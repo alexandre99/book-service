@@ -1,6 +1,7 @@
 package com.booking.api.shared;
 
 import com.booking.api.shared.dto.ErrorMessage;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,7 +31,7 @@ public class ControllerAdvice {
     public ResponseEntity<ErrorMessage> handleIllegalStateException(
             final IllegalStateException ex
     ) {
-        return ResponseEntity.badRequest().body(new ErrorMessage(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorMessage(ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
