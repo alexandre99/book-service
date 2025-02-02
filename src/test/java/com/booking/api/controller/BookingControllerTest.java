@@ -2,13 +2,12 @@ package com.booking.api.controller;
 
 import com.booking.dataprovider.property.entity.BlockPropertyJpaEntity;
 import com.booking.dataprovider.property.repository.BlockPropertyJpaEntityRepository;
+import com.booking.shared.BookingMother;
 import com.booking.shared.PropertyMother;
 import com.booking.api.booking.dto.BookingRequestDTO;
 import com.booking.api.booking.dto.GuestDetailsDTO;
 import com.booking.api.booking.dto.UpdateBookingDatesRequest;
 import com.booking.business.booking.model.State;
-import com.booking.dataprovider.booking.entity.BookingJpaEntity;
-import com.booking.dataprovider.booking.model.GuestDetails;
 import com.booking.dataprovider.booking.repository.BookingJpaEntityRepository;
 import com.booking.dataprovider.property.entity.PropertyJpaEntity;
 import org.junit.jupiter.api.Test;
@@ -34,6 +33,8 @@ class BookingControllerTest extends AbstractIntegrationTest {
     private PropertyMother propertyMother;
     @Autowired
     private BookingJpaEntityRepository entityRepository;
+    @Autowired
+    private BookingMother bookingMother;
     @Autowired
     private BlockPropertyJpaEntityRepository blockPropertyJpaEntityRepository;
 
@@ -111,8 +112,7 @@ class BookingControllerTest extends AbstractIntegrationTest {
     void shouldCancelBooking() throws Exception {
         //given
         final var propertyIds = this.propertyMother.createProperties(1);
-        final var entity = buildEntity(propertyIds.get(0), State.ACTIVE);
-        entityRepository.save(entity);
+        final var entity = bookingMother.createBookingEntity(propertyIds.get(0), State.ACTIVE);
 
         //when
         mockMvc.perform(patch(BASE_URL.concat("/%s/cancel").formatted(entity.getId())))
@@ -127,8 +127,7 @@ class BookingControllerTest extends AbstractIntegrationTest {
     void shouldRebookABooking() throws Exception {
         //given
         final var propertyIds = this.propertyMother.createProperties(1);
-        final var entity = buildEntity(propertyIds.get(0), State.CANCELED);
-        entityRepository.save(entity);
+        final var entity = bookingMother.createBookingEntity(propertyIds.get(0), State.CANCELED);
 
         //when
         mockMvc.perform(patch(BASE_URL.concat("/%s/rebook").formatted(entity.getId())))
@@ -146,11 +145,9 @@ class BookingControllerTest extends AbstractIntegrationTest {
         final var canceledId = propertyIds.get(0);
         final var activeId = propertyIds.get(1);
 
-        final var canceledEntity = buildEntity(canceledId, State.CANCELED);
-        entityRepository.save(canceledEntity);
+        final var canceledEntity = bookingMother.createBookingEntity(canceledId, State.CANCELED);
 
-        final var activeEntity = buildEntity(activeId, State.ACTIVE);
-        entityRepository.save(activeEntity);
+        final var activeEntity = bookingMother.createBookingEntity(activeId, State.ACTIVE);
 
         //when
         mockMvc.perform(delete(BASE_URL.concat("/%s").formatted(canceledEntity.getId())))
@@ -170,8 +167,7 @@ class BookingControllerTest extends AbstractIntegrationTest {
     void shouldUpdateBookingDates() throws Exception {
         //given
         final var propertyIds = this.propertyMother.createProperties(1);
-        final var entity = buildEntity(propertyIds.get(0), State.ACTIVE);
-        entityRepository.save(entity);
+        final var entity = bookingMother.createBookingEntity(propertyIds.get(0), State.ACTIVE);
 
         final var updateBookingDatesRequest = new UpdateBookingDatesRequest(
             LocalDate.now().plusDays(2),
@@ -196,8 +192,7 @@ class BookingControllerTest extends AbstractIntegrationTest {
     void shouldUpdateGuestDetails() throws Exception {
         //given
         final var propertyIds = this.propertyMother.createProperties(1);
-        final var entity = buildEntity(propertyIds.get(0), State.ACTIVE);
-        entityRepository.save(entity);
+        final var entity = bookingMother.createBookingEntity(propertyIds.get(0), State.ACTIVE);
 
         final var guestDetailsDTO = new GuestDetailsDTO(
             "Joe Doe 2",
@@ -274,8 +269,7 @@ class BookingControllerTest extends AbstractIntegrationTest {
     void shouldNotUpdateBookingDatesWhenThereIsOverlap() throws Exception {
         //given
         final var propertyIds = this.propertyMother.createProperties(1);
-        final var entity = buildEntity(propertyIds.get(0), State.ACTIVE);
-        entityRepository.save(entity);
+        final var entity = bookingMother.createBookingEntity(propertyIds.get(0), State.ACTIVE);
 
         final var updateBookingDatesRequest = new UpdateBookingDatesRequest(
                 LocalDate.now(),
@@ -296,25 +290,6 @@ class BookingControllerTest extends AbstractIntegrationTest {
         assertThat(bookingFound.getEndDate()).isEqualTo(updateBookingDatesRequest.endDate());
     }
 
-    private BookingJpaEntity buildEntity(final UUID propertyId,
-                                         final State state) {
-        return new BookingJpaEntity(
-            null,
-            new PropertyJpaEntity(propertyId),
-            new GuestDetails(
-                "Joe Doe",
-                "joedoe@gmai.com",
-                "+5591232265896",
-                1,
-                0,
-                0,
-                "specialRequests"
-            ),
-            LocalDate.now(),
-            LocalDate.now().plusDays(1),
-            state
-        );
-    }
 
     private BookingRequestDTO buildBookingRequestDTO(final UUID propertyId) {
         final var guestDetails = new GuestDetailsDTO(

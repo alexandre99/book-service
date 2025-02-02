@@ -1,7 +1,9 @@
 package com.booking.api.controller;
 
 import com.booking.api.property.dto.BlockPropertyRequest;
+import com.booking.business.booking.model.State;
 import com.booking.dataprovider.property.repository.BlockPropertyJpaEntityRepository;
+import com.booking.shared.BookingMother;
 import com.booking.shared.PropertyMother;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,9 @@ public class BlockPropertyControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private PropertyMother propertyMother;
+
+    @Autowired
+    private BookingMother bookingMother;
 
     @Test
     void shouldSaveBlockProperty() throws Exception {
@@ -197,6 +202,50 @@ public class BlockPropertyControllerTest extends AbstractIntegrationTest {
         //then
         assertThat(this.entityRepository.findBlockPropertyById(UUID.fromString(blockPropertyId))
                 .isEmpty()).isTrue();
+    }
+
+    @Test
+    void shouldNotBlockWhenThereIsOverlap() throws Exception {
+        //given
+        final var propertyIds = propertyMother.createProperties(1);
+        final var blockPropertyRequest = new BlockPropertyRequest(
+                propertyIds.get(0),
+                LocalDate.now(),
+                LocalDate.now().plusDays(1)
+        );
+        final var content = mapper.writeValueAsString(blockPropertyRequest);
+
+        //when
+        mockMvc.perform(post(BASE_URL)
+                        .contentType("application/json")
+                        .content(content))
+                .andExpect(status().isCreated());
+
+        //then
+        mockMvc.perform(post(BASE_URL)
+                        .contentType("application/json")
+                        .content(content))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldNotBlockWhenThereIsOverlapWithBooking() throws Exception {
+        //given
+        final var propertyId = this.propertyMother.createProperties(1).get(0);
+        final var bookingEntity = bookingMother.createBookingEntity(propertyId, State.ACTIVE);
+
+        final var blockPropertyRequest = new BlockPropertyRequest(
+                propertyId,
+                LocalDate.now(),
+                LocalDate.now().plusDays(1)
+        );
+        final var content = mapper.writeValueAsString(blockPropertyRequest);
+
+        //then when
+        mockMvc.perform(post(BASE_URL)
+                        .contentType("application/json")
+                        .content(content))
+                .andExpect(status().isConflict());
     }
 
 }
